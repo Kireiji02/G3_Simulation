@@ -154,8 +154,6 @@ def calculate(s1, s2, h, deg, M, k):
 
 
 # logic#---------------------------------------------------------------------------------------------------#
-# lx = []
-# ly = []
 scale_multiplier = 300  # to manually fit the screen
 speed_multiplier = 1  # to manually control time as see fit
 x_01_switch = 0
@@ -182,18 +180,6 @@ a = 9.81  # earth's gravitational acceleration
 
 # __replace__#
 u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
-
-# __previous__#
-# u = m.sqrt((4.9*(s1+s2+2)**2)/((h-0.35+m.tan(m.radians(deg))
-#            * (s1+s2+2))*m.cos(m.radians(deg))**2))
-# print("u =", str(u)[:5])
-# x = (19.6*M*m.sin(m.radians(deg)) +
-#      m.sqrt((19.6*M*m.sin(m.radians(deg))**2+4*k*1000*M*(u**2))))/(2*k*1000)
-# print("x =", str(x)[:5])
-# H = m.tan(m.radians(deg))*(s1+1)-4.9*((s1+1)/(u*m.cos(m.radians(deg))))**2+h
-# print("H =", str(H)[:5])
-# ux = u*m.cos(m.radians(deg))
-# uy = u*m.sin(m.radians(deg))
 
 
 ini_sx = 50  # initial floor position on X-axis
@@ -298,85 +284,27 @@ while (running):
 
     # __replace__#
     u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
-
-    # __previous__#
-    # u = m.sqrt((4.9*(s1+s2+2)**2)/((h-0.35+m.tan(m.radians(deg))
-    #                                 * (s1+s2+2))*m.cos(m.radians(deg))**2))
-    # x = (19.6*M*m.sin(m.radians(deg)) +
-    #      m.sqrt((19.6*M*m.sin(m.radians(deg))**2+4*k*1000*M*(u**2))))/(2*k*1000)
-    # H = m.tan(m.radians(deg))*(s1+1)-4.9 * \
-    #     ((s1+1)/(u*m.cos(m.radians(deg))))**2+h
-    # ux = u*m.cos(m.radians(deg))
-    # uy = u*m.sin(m.radians(deg))
-
     if pos_y_max > squash.pos_y:
         pos_y_max = squash.pos_y
     # toggleable simulation
     if toggle_start == 1:
         # dotted tracing#---------------------------------------------------------------------------------------------------#
-
-        # ___replace____#
         squash.dots_trag(t, speed_multiplier)
-
-        # ___Previous___#
-        # Re-fill the background with coordinates from list
-        # for i, j in zip(range(len(lx)), range(len(ly))):
-        #     pg.draw.circle(screen, black, (lx[i], ly[i]), 2)
-        # # Frequency of dots in the path tracer
-        # if (t*speed_multiplier % 80 == 0):
-        #     lx.append(int(squash.pos_x))
-        #     ly.append(int(squash.pos_y))
-
         # position vector#---------------------------------------------------------------------------------------------------#
-
-        # ___replace__#
         squash.draw(screen, scale_multiplier)
-
-        # ___Previous___#
-        # pg.draw.circle(screen, black, (pos_x,
-        #                                pos_y), 0.03*scale_multiplier)
-
         if (squash.pos_y <= ini_sy-0.35*scale_multiplier):  # run simulation
-
-            # ___replace__#
             squash.update_position(t)
-
-            # ___Previous___#
-            # pos_x = ini_sx+(ux*(t/1000*speed_multiplier))*scale_multiplier
-            # pos_y = (ini_sy-h*scale_multiplier)-(uy*(t/1000*speed_multiplier) +
-            #                                     (-a*(t/1000*speed_multiplier)**2)/2)*scale_multiplier
-            # curr_x_distance = str(ux*t/1000)[:5]
-            # curr_y_distance = str(h+(uy*(t/1000)-0.5*(a*((t/1000)**2))))[:5]
             t += 1
         else:  # reset simulation
             last_t = t
             t = 0
     elif toggle_start == 0:
         pos_y_max = 900
-
-        # __replace__#
         squash.reset(ini_sx-5+(0.015*scale_multiplier), ini_sy -
                      (h*scale_multiplier), squash.curr_x_distance, squash.curr_y_distance)
         squash.draw(screen, scale_multiplier)
-
-        # __previous__#
-        # pg.draw.circle(screen, black, (ini_sx-5+(0.015*scale_multiplier),
-        #                                ini_sy-(h*scale_multiplier)), 0.03*scale_multiplier)
-
     if toggle_reset == 1:
-        # __previous__#
-        # curr_x_distance = 0
-        # curr_y_distance = h
-
-        # __replace__#
         squash.reset(ini_sx, ini_sy-h*scale_multiplier, 0, h)
-
-        # __previous__#
-        # pos_x = ini_sx
-        # pos_y = ini_sy-h*scale_multiplier
-        # lx = []
-        # ly = []
-
         Reset_text_toggle = 0
         toggle_reset = 0
         toggle_start = 0
