@@ -55,18 +55,26 @@ class TextBox:
 
 class InputBox:
 
+<<<<<<< HEAD
     def __init__(self, x, y, w, h, text='', type='', l=100, location=''):
+=======
+    def __init__(self, x, y, w, h, text='', type='', l=100):
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
         self.rect = pg.Rect(x, y, w, h)
         self.color = black
         self.text = text
         self.return_text = ''
         self.type = type
         self.len = l
+<<<<<<< HEAD
         self.location = location
+=======
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
         self.txt_surface = FONT.render(text, True, self.color)
         self.active = False
         self.enter_switch = 0
 
+<<<<<<< HEAD
     def return_location(self, location, location_cooldown):
         if self.active == True:
             location = self.location
@@ -76,6 +84,8 @@ class InputBox:
             location_cooldown = 1
         return location, location_cooldown
 
+=======
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     def handle_event(self, event):
 
         if event.type == pg.MOUSEBUTTONDOWN:  # ทำการเช็คว่ามีการคลิก Mouse หรือไม่
@@ -131,10 +141,18 @@ class InputBox:
             else:
                 self.enter_switch = 0
         return output
+<<<<<<< HEAD
 
     def notify_user(self, text, px, py):
         if self.enter_switch == 1:
             screen.blit(TextBox(red, text).txt_surface, (px, py))
+=======
+    
+    def notify_user(self, text, px, py):
+        if self.enter_switch == 1:
+            screen.blit(TextBox(red,text).txt_surface, (px, py))
+
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 
 
 # Squash Object------------------------------------------------------------------------------
@@ -179,8 +197,11 @@ class Ball:
                                             self.pos_y), self.size*scale_multiplier)
 
 # Simulation Object-------------------------------------------------------------------------------------
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 class Simulation():
 
     def __init__(self, t, last_t, pos_y_max):
@@ -188,7 +209,11 @@ class Simulation():
         self.last_t = last_t
         self.pos_y_max = pos_y_max
 
+<<<<<<< HEAD
     def initiate_sim(self, wall_logic_gate, toggle_start):
+=======
+    def initiate_sim(self, toggle_start):
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
         if self.pos_y_max > squash.pos_y:
             self.pos_y_max = squash.pos_y
         # toggleable simulation
@@ -198,6 +223,7 @@ class Simulation():
             # position vector#---------------------------------------------------------------------------------------------------#
             squash.draw(screen, scale_multiplier)
             if (squash.pos_y <= ini_sy-0.35*scale_multiplier):  # run simulation
+<<<<<<< HEAD
                 if ((ini_sx+(1+s2)*scale_multiplier <= squash.pos_x <= (ini_sx+(1+s2)*scale_multiplier)+0.03*scale_multiplier) and (ini_sy+5-wall*scale_multiplier <= squash.pos_y <= (ini_sy+5-wall*scale_multiplier)+wall*scale_multiplier)):
                     wall_logic_gate = 1
                 if wall_logic_gate == 1:
@@ -206,6 +232,10 @@ class Simulation():
                 else:
                     squash.update_position(self.t)
                     self.t += 1
+=======
+                squash.update_position(self.t)
+                self.t += 1
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
             else:  # reset simulation
                 self.last_t = self.t
                 self.t = 0
@@ -213,6 +243,7 @@ class Simulation():
         elif toggle_start == 0:
             self.pos_y_max = 900
             squash.reset(ini_sx-5+(0.015*scale_multiplier), ini_sy -
+<<<<<<< HEAD
                          (h*scale_multiplier), squash.curr_x_distance, squash.curr_y_distance)
             squash.draw(screen, scale_multiplier)
 
@@ -231,6 +262,24 @@ class Simulation():
 def calculate(s1, s2, h, deg, M, k):
     u = m.sqrt((4.9*(s1+s2+2)**2)/((h-0.35+m.tan(m.radians(deg))
                                     * (s1+s2+2))*m.cos(m.radians(deg))**2))
+=======
+                     (h*scale_multiplier), squash.curr_x_distance, squash.curr_y_distance)
+            squash.draw(screen, scale_multiplier)
+
+    def reset_sim(self, reset_text_toggle, toggle_reset, toggle_start):
+        if toggle_reset == 1:
+            squash.reset(ini_sx, ini_sy-h*scale_multiplier, 0, h)
+            self.t = 0
+            reset_text_toggle = 0
+            toggle_reset = 0
+            toggle_start = 0
+        return reset_text_toggle, toggle_reset, toggle_start
+    
+# Calculate functions----------------------------------------------------------------------------------
+def calculate(s1, s2, h, deg, M, k):
+    u = m.sqrt((4.9*(s1+s2+2)**2)/((h-0.35+m.tan(m.radians(deg))
+        * (s1+s2+2))*m.cos(m.radians(deg))**2))
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     # print("u =", str(u)[:5])
     x = (19.6*M*m.sin(m.radians(deg)) +
          m.sqrt((19.6*M*m.sin(m.radians(deg))**2+4*k*1000*M*(u**2))))/(2*k*1000)
@@ -244,7 +293,11 @@ def calculate(s1, s2, h, deg, M, k):
 
 
 # set field function--------------------------------------------------------------------------
+<<<<<<< HEAD
 def draw_field(location, location_time, location_cooldown):
+=======
+def draw_field():
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))
     pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))
     pg.draw.rect(screen, black, (ini_sx-5, ini_sy+5-h*scale_multiplier,
@@ -257,6 +310,7 @@ def draw_field(location, location_time, location_cooldown):
                  ini_sy+5-0.35*scale_multiplier, 0.13*scale_multiplier, 0.35*scale_multiplier))
     pg.draw.rect(screen, light_blue, ((ini_sx+(-0.8+s2)*scale_multiplier),
                  ini_sy+3, 0.8*scale_multiplier, 4))
+<<<<<<< HEAD
     # alternate
     if location == 'degree':
         pg.draw.line(screen, red, (ini_sx-1, ini_sy-h*scale_multiplier),
@@ -344,6 +398,51 @@ def update_textboxs():
                 'S2 =              (mm)').txt_surface, (400, 555))
     screen.blit(TextBox(black,
                 'Wall Height =              (cm)').txt_surface, (570, 555))
+=======
+
+
+# get speed_multiplier functions------------------------------------------------------------------------
+def find_speed_multiplier(x_speed_switchs):
+    x_speed_switchs = x_01.takeaction(x_speed_switchs, [1, 0, 0, 0, 0])
+    x_speed_switchs = x_02.takeaction(x_speed_switchs, [0, 1, 0, 0, 0])
+    x_speed_switchs = x_05.takeaction(x_speed_switchs, [0, 0, 1, 0, 0])
+    x_speed_switchs = x_08.takeaction(x_speed_switchs, [0, 0, 0, 1, 0])
+    x_speed_switchs = x_1.takeaction(x_speed_switchs, [0, 0, 0, 0, 1])
+    
+    # speed button adjustment
+    if x_speed_switchs[0]== 1: #x_01_switch
+        pg.draw.rect(screen, ACTIVE, (x_01.x,
+                                      x_01.y, x_01.w, x_01.h), 5)
+        speed_multiplier = 0.1
+    elif x_speed_switchs[1] == 1: #x_02_switch
+        pg.draw.rect(screen, ACTIVE, (x_02.x,
+                                      x_02.y, x_02.w, x_02.h), 5)
+        speed_multiplier = 0.2
+    elif x_speed_switchs[2] == 1: #x_05_switch
+        pg.draw.rect(screen, ACTIVE, (x_05.x,
+                                      x_05.y, x_05.w, x_05.h), 5)
+        speed_multiplier = 0.5
+    elif x_speed_switchs[3] == 1: #x_08_switch
+        pg.draw.rect(screen, ACTIVE, (x_08.x,
+                                      x_08.y, x_08.w, x_08.h), 5)
+        speed_multiplier = 0.8
+    elif x_speed_switchs[4] == 1: #x_1_switch
+        pg.draw.rect(screen, ACTIVE, (x_1.x,
+                                      x_1.y, x_1.w, x_1.h), 5)
+        speed_multiplier = 1
+    return speed_multiplier, x_speed_switchs
+
+# update text function---------------------------------------------------------------------------------
+def update_textboxs():
+    screen.blit(TextBox(black,
+                'Launch degree = ').txt_surface, (850, 100))
+    screen.blit(TextBox(black,
+                'S1[Bucket] distance(mm) = ').txt_surface, (850, 150))
+    screen.blit(TextBox(black,
+                'S2[Shooter] distance(mm) = ').txt_surface, (850, 200))
+    screen.blit(TextBox(black,
+                'Wall Height(cm) = ').txt_surface, (850, 250))
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     screen.blit(TextBox(black,
                 '0.1').txt_surface, (909, 423))
     screen.blit(TextBox(black,
@@ -356,8 +455,13 @@ def update_textboxs():
                 '1').txt_surface, (1075, 423))
     screen.blit(TextBox(dark_blue,
                 'INITIATE').txt_surface, (969, 474))
+<<<<<<< HEAD
     '''screen.blit(TextBox(mystic_green,
                 'Squash ball shooter simulation').txt_surface, (850, 50))'''
+=======
+    screen.blit(TextBox(mystic_green,
+                'Squash ball shooter simulation').txt_surface, (850, 50))
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     screen.blit(TextBox(red,
                 'RESET').txt_surface, (978, 524))
     screen.blit(TextBox(black,
@@ -365,15 +469,24 @@ def update_textboxs():
     screen.blit(TextBox(black,
                 'Scale Multiplier = {sp}'.format(sp=scale_multiplier)).txt_surface, (850, 300))
     screen.blit(TextBox(mystic_green,
+<<<<<<< HEAD
                 "Initial Velocity = {u} m/s".format(u=str(u)[:5])).txt_surface, (850, 100))
     screen.blit(TextBox(mystic_green,
                 "Spring deformation = {x} m".format(x=str(x)[:5])).txt_surface, (850, 150))
     screen.blit(TextBox(mystic_green,
                 "Height over wall while passing  = {H} m".format(H=str(H-wall)[:5])).txt_surface, (850, 200))
+=======
+                "Initial Velocity = {u} m/s".format(u=str(u)[:5])).txt_surface, (20, 565))
+    screen.blit(TextBox(mystic_green,
+                "Spring deformation = {x} m".format(x=str(x)[:5])).txt_surface, (280, 565))
+    screen.blit(TextBox(mystic_green,
+                "Peak height = {H} m".format(H=str(H)[:5])).txt_surface, (570, 565))
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     screen.blit(TextBox(black,
                 "X displacement from start : {x_pos} m".format(x_pos=squash.curr_x_distance)).txt_surface, (5, 5))
     screen.blit(TextBox(black,
                 "Y displacement from ground : {y_pos} m".format(y_pos=squash.curr_y_distance)).txt_surface, (5, 30))
+<<<<<<< HEAD
 
     # conditional textboxes
     for box in input_boxes:
@@ -382,6 +495,16 @@ def update_textboxs():
     '''if reset_text_toggle == 1:
         screen.blit(TextBox(red,
                     'Press Reset before changing scale').txt_surface, (860, 560))'''
+=======
+    
+    # conditional textboxes
+    for box in input_boxes:
+        box.notify_user('Edit and press Enter to save changes ', 850, 350)
+    
+    if reset_text_toggle == 1:
+        screen.blit(TextBox(red,
+                    'Press Reset before changing scale').txt_surface, (860, 560))
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 
 
 # logic#---------------------------------------------------------------------------------------------------#
@@ -389,16 +512,24 @@ scale_multiplier = 300  # to manually fit the screen
 speed_multiplier = 1  # to manually control time as see fit
 toggle_start = 0
 toggle_reset = 0
+<<<<<<< HEAD
+=======
+reset_text_toggle = 0
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 x_01_switch = 0
 x_02_switch = 0
 x_05_switch = 0
 x_08_switch = 0
 x_1_switch = 1
+<<<<<<< HEAD
 wall_logic_gate = 0
 location_cooldown = 0
 location = ''
 x_speed_switches = [x_01_switch, x_02_switch,
                     x_05_switch, x_08_switch, x_1_switch]
+=======
+x_speed_switchs = [x_01_switch, x_02_switch, x_05_switch, x_08_switch, x_1_switch]
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 # Scientific variables#---------------------------------------------------------------------------------------------------#
 M = 0.23  # net weight of ball and platform
 k = 0.88  # spring constant
@@ -413,14 +544,21 @@ u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
 
 
 ini_sx = 50  # initial floor position on X-axis
+<<<<<<< HEAD
 ini_sy = 530  # initial floor position on Y-axis
+=======
+ini_sy = 550  # initial floor position on Y-axis
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 pos_x = ini_sx
 pos_y = ini_sy-h*scale_multiplier  # initial ball position
 pos_y_max = pos_y
 curr_x_distance = 0
 curr_y_distance = h
 last_t = 0
+<<<<<<< HEAD
 location_time = 0
+=======
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 t = 0  # initial time
 # Color code#---------------------------------------------------------------------------------------------------#
 black = (0, 0, 0)
@@ -451,10 +589,17 @@ x_1 = Button(1060, 420, 40, 32, black)
 x_buttons = [x_01, x_02, x_05, x_08, x_1]
 
 # Input boxes
+<<<<<<< HEAD
 input_box1 = InputBox(160, 555, 32, 32, '60', 'int', 2, 'degree')
 input_box2 = InputBox(270, 555, 42, 32, '303', 'int', 3, 's1')
 input_box3 = InputBox(440, 555, 42, 32, '0', 'int', 3, 's2')
 input_box4 = InputBox(680, 555, 42, 32, '100', 'int', 3, 'wall')
+=======
+input_box1 = InputBox(990, 100, 32, 32, '60', 'int', 2)
+input_box2 = InputBox(1080, 150, 40, 32, '303', 'int', 3)
+input_box3 = InputBox(1083, 200, 40, 32, '0', 'int', 3)
+input_box4 = InputBox(1000, 250, 40, 32, '100', 'int', 3)
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 input_boxes = [input_box1, input_box2, input_box3, input_box4]
 
 # Squash
@@ -466,8 +611,12 @@ sim = Simulation(t, last_t, pos_y_max)
 
 while (running):
     screen.fill((255, 255, 204))
+<<<<<<< HEAD
     location, location_time, location_cooldown = draw_field(
         location, location_time, location_cooldown)
+=======
+    draw_field()
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 
     # inputtable variables
     deg = input_box1.inputbox_return(deg)
@@ -478,16 +627,24 @@ while (running):
     # Calculations
     u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
     # simulation init#
+<<<<<<< HEAD
     sim.initiate_sim(wall_logic_gate, toggle_start)
     # simulation reset#
     wall_logic_gate, toggle_reset, toggle_start = sim.reset_sim(
         wall_logic_gate, toggle_reset, toggle_start)
 
+=======
+    sim.initiate_sim(toggle_start)
+    # simulation reset#
+    reset_text_toggle, toggle_reset, toggle_start = sim.reset_sim(reset_text_toggle, toggle_reset, toggle_start)
+    
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
     # initiate button interaction
     Initiate.draw(screen)
     Reset.draw(screen)
     for button in x_buttons:
         button.draw(screen)
+<<<<<<< HEAD
 
     # Buttons#
     [toggle_start] = Initiate.takeaction([toggle_start], [1])
@@ -510,6 +667,24 @@ while (running):
         # เรียกใช้ฟังก์ชัน draw() ของ InputBox เพื่อทำการสร้างรูปบน Screen
         box.draw(screen)
     location_cooldown = min(location_cooldowns)
+=======
+    
+    # Buttons#
+    [toggle_start] = Initiate.takeaction([toggle_start], [1])
+    [toggle_reset] = Reset.takeaction([toggle_reset], [1])
+    
+    # get speed_multiplier
+    speed_multiplier, x_speed_switchs = find_speed_multiplier(x_speed_switchs)
+
+    # Textboxes
+    update_textboxs()
+    
+    # ทำการเรียก InputBox ทุกๆตัว โดยการ Loop เข้าไปยัง list ที่เราเก็บค่า InputBox ไว้
+    for box in input_boxes:
+        box.update()  # เรียกใช้ฟังก์ชัน update() ของ InputBox
+        # เรียกใช้ฟังก์ชัน draw() ของ InputBox เพื่อทำการสร้างรูปบน Screen
+        box.draw(screen)
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
 
     pg.display.update()
     for event in pg.event.get():
@@ -519,11 +694,21 @@ while (running):
             if event.key == pg.K_KP_MINUS:
                 if toggle_start == 0:
                     scale_multiplier -= 10
+<<<<<<< HEAD
                 toggle_reset = 1
             elif event.key == pg.K_KP_PLUS:
                 if toggle_start == 0:
                     scale_multiplier += 10
                 toggle_reset = 1
+=======
+                elif toggle_start == 1:
+                    reset_text_toggle = 1
+            elif event.key == pg.K_KP_PLUS:
+                if toggle_start == 0:
+                    scale_multiplier += 10
+                elif toggle_start == 1:
+                    reset_text_toggle = 1
+>>>>>>> aea7bdbd392550d619dd1ca3c132ac33f15f96e2
         if event.type == pg.QUIT:
             pg.quit()
             exit()
