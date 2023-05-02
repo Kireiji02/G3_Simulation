@@ -23,7 +23,7 @@ class Button(Rectangle):
         if self.x <= pg.mouse.get_pos()[0] <= (self.x + self.w) and self.y <= pg.mouse.get_pos()[1] <= (self.y + self.h):
             return True
         else:
-            pass
+            False
 
     def takeaction(self, output, value):
         if self.isMouseOn():
@@ -39,6 +39,25 @@ class Button(Rectangle):
             pg.draw.rect(screen, black, (self.x,
                                          self.y, self.w, self.h), 2)
         return output
+
+    def takeaction_toggle(self, output, mouse_trig, press, mouse_output, Auto_Manual_text_toggle):
+        if self.isMouseOn():
+            mouse_trig, press, mouse_output = mouse_logic(
+                mouse_trig, press, mouse_output)
+            if mouse_output:
+                pg.draw.rect(screen, ACTIVE, (self.x,
+                                              self.y, self.w, self.h), 5)
+                Auto_Manual_text_toggle = True
+                output = True
+            else:
+                pg.draw.rect(screen, ACTIVE, (self.x,
+                                              self.y, self.w, self.h), 2)
+                Auto_Manual_text_toggle = False
+                output = False
+        else:
+            pg.draw.rect(screen, black, (self.x,
+                                         self.y, self.w, self.h), 2)
+        return output, mouse_trig, press, mouse_output, Auto_Manual_text_toggle
 
 
 class TextBox:
@@ -279,18 +298,19 @@ def activate_ping(location, ct_G, ct_B):
 
 
 def draw_field(location, location_time, location_cooldown):
-    pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))
-    pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))
+    pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))  # floor
     pg.draw.rect(screen, black, (ini_sx-5, ini_sy+5-h*scale_multiplier,
-                 0.03*scale_multiplier, h*scale_multiplier))
+                 0.03*scale_multiplier, h*scale_multiplier))  # shooter
     pg.draw.rect(screen, black, (ini_sx+(1+s2)*scale_multiplier,
-                 ini_sy+5-wall*scale_multiplier, 0.03*scale_multiplier, wall*scale_multiplier))
+                 ini_sy+5-wall*scale_multiplier, 0.03*scale_multiplier, wall*scale_multiplier))  # wall
     pg.draw.rect(screen, light_blue, ((ini_sx+(2+s2)*scale_multiplier),
                  ini_sy+3, 0.433*scale_multiplier, 4))
     pg.draw.rect(screen, dark_blue, ((ini_sx+(2+s1+s2)*scale_multiplier)-(0.065*scale_multiplier),
                  ini_sy+5-0.35*scale_multiplier, 0.13*scale_multiplier, 0.35*scale_multiplier))
     pg.draw.rect(screen, light_blue, ((ini_sx+(-0.8+s2)*scale_multiplier),
                  ini_sy+3, 0.8*scale_multiplier, 4))
+    pg.draw.rect(screen, bg_color, (win_x-400, 0, 400, win_y))
+    pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))  # divider
     # alternative mode
     if location == 'degree':
         pg.draw.line(screen, red, (ini_sx-1, ini_sy-h*scale_multiplier),
@@ -337,11 +357,16 @@ def draw_field(location, location_time, location_cooldown):
 
 # get speed_multiplier functions------------------------------------------------------------------------
 def find_speed_multiplier(x_speed_switches):
-    x_speed_switches = x_01.takeaction(x_speed_switches, [1, 0, 0, 0, 0])
-    x_speed_switches = x_02.takeaction(x_speed_switches, [0, 1, 0, 0, 0])
-    x_speed_switches = x_05.takeaction(x_speed_switches, [0, 0, 1, 0, 0])
-    x_speed_switches = x_08.takeaction(x_speed_switches, [0, 0, 0, 1, 0])
-    x_speed_switches = x_1.takeaction(x_speed_switches, [0, 0, 0, 0, 1])
+    x_speed_switches = x_01.takeaction(
+        x_speed_switches, [1, 0, 0, 0, 0])
+    x_speed_switches = x_02.takeaction(
+        x_speed_switches, [0, 1, 0, 0, 0])
+    x_speed_switches = x_05.takeaction(
+        x_speed_switches, [0, 0, 1, 0, 0])
+    x_speed_switches = x_08.takeaction(
+        x_speed_switches, [0, 0, 0, 1, 0])
+    x_speed_switches = x_1.takeaction(
+        x_speed_switches, [0, 0, 0, 0, 1])
 
     # speed button adjustment
     if x_speed_switches[0] == 1:  # x_01_switch
@@ -390,40 +415,58 @@ def update_textboxs():
                 '1').txt_surface, (1075, 423))
     screen.blit(TextBox(dark_blue,
                 'INITIATE').txt_surface, (969, 474))
-    '''screen.blit(TextBox(mystic_green,
-                'Squash ball shooter simulation').txt_surface, (850, 50))'''
     screen.blit(TextBox(red,
                 'RESET').txt_surface, (978, 524))
     screen.blit(TextBox(black,
                 'Speed Multiplier').txt_surface, (935, 395))
     screen.blit(TextBox(black,
-                'Scale Multiplier = {sp}'.format(sp=scale_multiplier)).txt_surface, (850, 300))
+                'Scale : {sp}'.format(sp=scale_multiplier)).txt_surface, (820, 300))
     screen.blit(TextBox(mystic_green,
-                "Initial Velocity = {u} m/s".format(u=str(u)[:5])).txt_surface, (850, 100))
+                "Initial Velocity = {u} m/s".format(u=str(u)[:5])).txt_surface, (820, 25))
     screen.blit(TextBox(mystic_green,
-                "Spring deformation = {x} m".format(x=str(x)[:5])).txt_surface, (850, 150))
+                "Spring deformation = {x} m".format(x=str(x)[:5])).txt_surface, (820, 75))
     screen.blit(TextBox(mystic_green,
-                "Height over wall while passing  = {H} m".format(H=str(H-wall)[:5])).txt_surface, (850, 200))
+                "Height over wall while passing  = {H} m".format(H=str(H-wall)[:5])).txt_surface, (820, 125))
     screen.blit(TextBox(black,
                 "X displacement from start : {x_pos} m".format(x_pos=squash.curr_x_distance)).txt_surface, (5, 5))
     screen.blit(TextBox(black,
                 "Y displacement from ground : {y_pos} m".format(y_pos=squash.curr_y_distance)).txt_surface, (5, 30))
+    if Auto_Manual_text_toggle:
+        screen.blit(TextBox(mystic_green, 'Auto').txt_surface, (1093, 300))
+    if not Auto_Manual_text_toggle:
+        screen.blit(TextBox(black, 'Manual').txt_surface, (1080, 300))
+
+
+def mouse_logic(mouse_trig, press, mouse_output):
+    mouse_release = True if pg.mouse.get_pressed()[0] == False else False
+    if mouse_release:  # if mouse button is released
+        mouse_trig[0] = True
+    if not mouse_release:  # if mouse button is pressed
+        mouse_trig[1] = True
+    # trigger only if mouse button already pressed and releasde at least once
+    if mouse_trig == [True, True]:
+        press.append('pressed')
+        # trigger only when mouse button pressed but not when release
+        mouse_trig = [False, False]
+    if len(press) == 2:
+        # output = True
+        mouse_output = not mouse_output
+        press = []
+    return mouse_trig, press, mouse_output
 
 
 def recommend_adjustment(toggle_recc, scale_multiplier):
-    if toggle_recc == 1:
+    if toggle_recc == True:
         while (2+s2+s1)*scale_multiplier < 690:
             scale_multiplier += 1
             if (2+s2+s1)*scale_multiplier >= 690:
-                toggle_recc = 0
                 break
-    if toggle_recc == 1:
+    if toggle_recc == True:
         while (2+s2+s1)*scale_multiplier > 700:
             scale_multiplier -= 1
             if (2+s2+s1)*scale_multiplier <= 700:
-                toggle_recc = 0
                 break
-    toggle_recc = 0
+    # toggle_recc = 0
     return toggle_recc, scale_multiplier
 
 
@@ -432,7 +475,11 @@ scale_multiplier = 300  # to manually fit the screen
 speed_multiplier = 1  # to manually control time as see fit
 toggle_start = 0
 toggle_reset = 0
-toggle_recc = 0
+toggle_recc = False
+mouse_output = False
+mouse_trig = [False, False]
+Auto_Manual_text_toggle = False  # Manual
+press = []
 x_01_switch = 0
 x_02_switch = 0
 x_05_switch = 0
@@ -510,11 +557,8 @@ squash = Ball(pos_x, pos_y, u, 0.03, black, curr_x_distance, curr_y_distance)
 
 # Simulation
 sim = Simulation(t, last_t, pos_y_max)
-
-
 while (running):
-    print(toggle_recc)
-    screen.fill((bg_color))
+    screen.fill((255, 255, 204))
     # alternative visual display
     location, ct_G, ct_B = activate_ping(location, ct_G, ct_B)
     location, location_time, location_cooldown = draw_field(
@@ -544,7 +588,8 @@ while (running):
     # Buttons#
     [toggle_start] = Initiate.takeaction([toggle_start], [1])
     [toggle_reset] = Reset.takeaction([toggle_reset], [1])
-    [toggle_recc] = recommend.takeaction([toggle_recc], [1])
+    toggle_recc, mouse_trig, press, mouse_output, Auto_Manual_text_toggle = recommend.takeaction_toggle(
+        toggle_recc, mouse_trig, press, mouse_output, Auto_Manual_text_toggle)
 
     # recommend button
     toggle_recc, scale_multiplier = recommend_adjustment(
@@ -553,7 +598,6 @@ while (running):
     # get speed_multiplier
     speed_multiplier, x_speed_switches = find_speed_multiplier(
         x_speed_switches)
-    # print(location_cooldown, location_time, location)
     # Textboxes
     update_textboxs()
 
