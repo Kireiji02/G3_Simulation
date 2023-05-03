@@ -38,8 +38,12 @@ class Hover(Circle):
             pg.draw.rect(screen, rect_color, (x_rect, y_rect, w_rect, h_rect))
             pg.draw.rect(screen, rect_edge_color,
                          (x_rect, y_rect, w_rect, h_rect), 2)
-            screen.blit(TextBox(black, "use + and - key on numpad to change scale by 10",
+            screen.blit(TextBox(black, "+ and - button changes scale by 1",
                         FONT_RB).txt_surface, (360, 50))
+            screen.blit(TextBox(black, "+ and - key on numpad to change scale by 10",
+                        FONT_RB).txt_surface, (360, 75))
+            screen.blit(TextBox(black, "Scaling can be changed between Manual and Auto",
+                        FONT_RB).txt_surface, (360, 100))
 
 
 class Button(Rectangle):
@@ -737,7 +741,7 @@ while (running):
     location_cooldown = min(location_cooldowns)
 
     # hover over other obejcts
-    hover_info.popup(350, 40, 420, 42, white, black)
+    hover_info.popup(350, 40, 440, 85, white, black)
 
     pg.display.update()
     for event in pg.event.get():
