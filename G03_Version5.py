@@ -15,17 +15,41 @@ class Rectangle:
                      (self.x, self.y, self.w, self.h), 2)
 
 
+class Circle:
+    def __init__(self, x, y, r, color=''):
+        self.x = x  # Position X
+        self.y = y  # Position Y
+        self.r = r  # Radius
+        self.color = color
+
+    def draw(self, screen,):
+        pg.draw.circle(screen, self.color, (self.x, self.y), self.r, 2)
+
+
+class Hover(Circle):
+    def __init__(self, x_circle=0, y_circle=0, r_circle=0, circle_color=''):
+        Circle.__init__(self, x_circle, y_circle, r_circle, circle_color)
+
+    def isMouseOn(self):
+        return True if ((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2) else False
+
+    def popup(self, x_rect=0, y_rect=0, w_rect=0, h_rect=0, rect_color='', rect_edge_color=''):
+        if self.isMouseOn():
+            pg.draw.rect(screen, rect_color, (x_rect, y_rect, w_rect, h_rect))
+            pg.draw.rect(screen, rect_edge_color,
+                         (x_rect, y_rect, w_rect, h_rect), 2)
+            screen.blit(TextBox(black, "use + and - key on numpad to change scale by 10",
+                        FONT_RB).txt_surface, (360, 50))
+
+
 class Button(Rectangle):
     def __init__(self, x=0, y=0, w=0, h=0, color=''):
         Rectangle.__init__(self, x, y, w, h, color)
 
     def isMouseOn(self):
-        if self.x <= pg.mouse.get_pos()[0] <= (self.x + self.w) and self.y <= pg.mouse.get_pos()[1] <= (self.y + self.h):
-            return True
-        else:
-            False
+        return True if self.x <= pg.mouse.get_pos()[0] <= (self.x + self.w) and self.y <= pg.mouse.get_pos()[1] <= (self.y + self.h) else False
 
-    def takeaction(self, output, value):
+    def isPressed(self, output, value):
         if self.isMouseOn():
             if pg.mouse.get_pressed()[0]:
                 pg.draw.rect(screen, ACTIVE, (self.x,
@@ -36,11 +60,12 @@ class Button(Rectangle):
                 pg.draw.rect(screen, ACTIVE, (self.x,
                                               self.y, self.w, self.h), 2)
         else:
-            pg.draw.rect(screen, black, (self.x,
-                                         self.y, self.w, self.h), 2)
+            pg.draw.rect(screen, self.color, (self.x,
+                                              self.y, self.w, self.h), 2)
         return output
 
-    def takeaction_toggle(self, output, mouse_trig, press, mouse_output, Auto_Manual_text_toggle):
+    # Manual to auto with a click and vice versa.
+    def toggle_auto(self, var, mouse_trig, press, mouse_output, Auto_Manual_text_toggle):
         if self.isMouseOn():
             mouse_trig, press, mouse_output = mouse_logic(
                 mouse_trig, press, mouse_output)
@@ -48,24 +73,45 @@ class Button(Rectangle):
                 pg.draw.rect(screen, ACTIVE, (self.x,
                                               self.y, self.w, self.h), 5)
                 Auto_Manual_text_toggle = True
-                output = True
+                var = True
             else:
                 pg.draw.rect(screen, ACTIVE, (self.x,
                                               self.y, self.w, self.h), 2)
                 Auto_Manual_text_toggle = False
-                output = False
+                var = False
         else:
             pg.draw.rect(screen, black, (self.x,
                                          self.y, self.w, self.h), 2)
-        return output, mouse_trig, press, mouse_output, Auto_Manual_text_toggle
+        return var, mouse_trig, press, mouse_output, Auto_Manual_text_toggle
+
+    def isPressed_with_condition(self, var, increment, mouse_trig, press, mouse_output, Auto_Manual_text_toggle):
+        if Auto_Manual_text_toggle:
+            pg.draw.rect(screen, ACTIVE, (self.x,
+                                          self.y, self.w, self.h), 2)
+        else:
+            if self.isMouseOn():
+                mouse_trig, press, mouse_output = mouse_logic(
+                    mouse_trig, press, mouse_output)
+                if mouse_output:
+                    pg.draw.rect(screen, ACTIVE, (self.x,
+                                                  self.y, self.w, self.h), 5)
+                    var += increment
+                    mouse_output = False
+                else:
+                    pg.draw.rect(screen, ACTIVE, (self.x,
+                                                  self.y, self.w, self.h), 2)
+            else:
+                pg.draw.rect(screen, self.color, (self.x,
+                                                  self.y, self.w, self.h), 2)
+        return var, mouse_trig, press, mouse_output
 
 
 class TextBox:
-    def __init__(self, col, text=''):
+    def __init__(self, col, text='', font=''):
         # self.rect = pg.Rect(x, y, w, h)
         self.color = col
         self.text = text
-        self.txt_surface = FONT.render(text, True, self.color)
+        self.txt_surface = font.render(text, True, self.color)
 
     def draw(self, Screen):
         # Blit the text.
@@ -74,15 +120,17 @@ class TextBox:
 
 class InputBox:
 
-    def __init__(self, x, y, w, h, text='', type='', l=100, location=''):
+    def __init__(self, x, y, w, h, text='', type='', l=100, location='', font='', color=''):
         self.rect = pg.Rect(x, y, w, h)
-        self.color = black
+        self.color = color
+        self.default_color = color
         self.text = text
         self.return_text = ''
         self.type = type
         self.len = l
         self.location = location
-        self.txt_surface = FONT.render(text, True, self.color)
+        self.txt_surface = font.render(text, True, self.color)
+        self.font = font
         self.active = False
         self.enter_switch = 0
 
@@ -125,8 +173,9 @@ class InputBox:
                         else:
                             self.text = self.text
                 # Re-render the text.
-                self.txt_surface = FONT.render(self.text, True, black)
-        self.color = ACTIVE if self.active else black  # เปลี่ยนสีของ InputBox
+                self.txt_surface = self.font.render(
+                    self.text, True, self.default_color)
+        self.color = ACTIVE if self.active else self.default_color  # เปลี่ยนสีของ InputBox
 
     def update(self):
         # Resize the box if the text is too long.
@@ -139,9 +188,9 @@ class InputBox:
         # Blit the rect.
         pg.draw.rect(Screen, self.color, self.rect, 2)
 
-    def inputbox_return(self, output, multiplier=1):
+    def inputbox_return(self, var, multiplier=1):
         if self.return_text != '':
-            output = int(self.text)/multiplier
+            var = int(self.text)/multiplier
             self.return_text = ''
             self.enter_switch = 0
         if self.return_text == '':
@@ -149,11 +198,11 @@ class InputBox:
                 self.enter_switch = 1
             else:
                 self.enter_switch = 0
-        return output
+        return var
 
     def notify_user(self, text, px, py):
         if self.enter_switch == 1:
-            screen.blit(TextBox(red, text).txt_surface, (px, py))
+            screen.blit(TextBox(red, text, FONT).txt_surface, (px, py))
 
 
 # Squash Object------------------------------------------------------------------------------
@@ -200,7 +249,7 @@ class Ball:
 # Simulation Object-------------------------------------------------------------------------------------
 
 
-class Simulation():
+class Simulation:
 
     def __init__(self, t, last_t, pos_y_max):
         self.t = t
@@ -218,18 +267,26 @@ class Simulation():
             squash.draw(screen, scale_multiplier)
             if (squash.pos_y <= ini_sy-0.35*scale_multiplier):  # run simulation
                 if ((ini_sx+(1+s2)*scale_multiplier <= squash.pos_x <= (ini_sx+(1+s2)*scale_multiplier)+0.03*scale_multiplier) and (ini_sy+5-wall*scale_multiplier <= squash.pos_y <= (ini_sy+5-wall*scale_multiplier)+wall*scale_multiplier)):
+                    show_status(1050, 425, 10, light_red, black, 'Fail')
+                    show_status(895, 425, 10, light_blue, black, 'Frozen')
                     wall_logic_gate = 1
                 if wall_logic_gate == 1:
                     self.last_t = self.t
                     self.t = 0
                 else:
+                    show_status(1050, 425, 10, ACTIVE, black, 'Status')
+                    show_status(895, 425, 10, light_red, black, 'Simulating')
                     squash.update_position(self.t)
                     self.t += 1
-            else:  # reset simulation
+            else:  # freeze simulation
+                show_status(1050, 425, 10, light_green, black, 'Pass')
+                show_status(895, 425, 10, light_blue, black, 'Frozen')
                 self.last_t = self.t
                 self.t = 0
             pg.draw.rect(screen, red, (0, sim.pos_y_max, win_x-400, 2))
         elif toggle_start == 0:
+            show_status(1050, 425, 10, ACTIVE, black, 'Status')
+            show_status(895, 425, 10, light_green, black, 'Ready')
             self.pos_y_max = 900
             squash.reset(ini_sx-5+(0.015*scale_multiplier), ini_sy -
                          (h*scale_multiplier), squash.curr_x_distance, squash.curr_y_distance)
@@ -259,7 +316,14 @@ def calculate(s1, s2, h, deg, M, k):
     # print("H =", str(H)[:5])
     ux = u*m.cos(m.radians(deg))
     uy = u*m.sin(m.radians(deg))
-    return u, x, H, ux, uy
+    time = (s1+s2+2)/ux
+    return u, x, H, ux, uy, time
+
+
+def show_status(x, y, r, color, edge_color, text=''):
+    pg.draw.circle(screen, color, (x, y), r)
+    pg.draw.circle(screen, edge_color, (x, y), r, 2)
+    screen.blit(TextBox(black, text, FONT_RB).txt_surface, (x+26, y-6))
 
 
 def ping_location(x, y, ct_G, ct_B):
@@ -294,10 +358,20 @@ def activate_ping(location, ct_G, ct_B):
             ini_sx+(1+s2)*scale_multiplier, ini_sy+5-0.5*wall*scale_multiplier, ct_G, ct_B)
     return location, ct_G, ct_B
 
+
+def draw_scale():
+    for i in range(60):
+        pg.draw.rect(screen, black, (0, ini_sy-(0.1*i*scale_multiplier),
+                                     0.05*scale_multiplier, 0.01*scale_multiplier))
+        pg.draw.rect(screen, black, (0, ini_sy-(0.05*scale_multiplier)-(0.1*i*scale_multiplier),
+                                     0.025*scale_multiplier, 0.01*scale_multiplier))
+
 # set field function--------------------------------------------------------------------------
 
 
 def draw_field(location, location_time, location_cooldown):
+    pg.draw.rect(screen, bg_color_highlight,
+                 (0, win_y-65, 215, 66))  # S1 input highlight
     pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))  # floor
     pg.draw.rect(screen, black, (ini_sx-5, ini_sy+5-h*scale_multiplier,
                  0.03*scale_multiplier, h*scale_multiplier))  # shooter
@@ -310,7 +384,11 @@ def draw_field(location, location_time, location_cooldown):
     pg.draw.rect(screen, light_blue, ((ini_sx+(-0.8+s2)*scale_multiplier),
                  ini_sy+3, 0.8*scale_multiplier, 4))
     pg.draw.rect(screen, bg_color, (win_x-400, 0, 400, win_y))
+    pg.draw.rect(screen, bg_color_highlight,
+                 (800, 40, 400, 60))  # output highlight
     pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))  # divider
+    pg.draw.rect(screen, black, (800, 275, win_x-800, 2))
+    pg.draw.rect(screen, black, (72, 554, 52, 32), 2)  # S1 inputbox shadow
     # alternative mode
     if location == 'degree':
         pg.draw.line(screen, red, (ini_sx-1, ini_sy-h*scale_multiplier),
@@ -357,15 +435,15 @@ def draw_field(location, location_time, location_cooldown):
 
 # get speed_multiplier functions------------------------------------------------------------------------
 def find_speed_multiplier(x_speed_switches):
-    x_speed_switches = x_01.takeaction(
+    x_speed_switches = x_01.isPressed(
         x_speed_switches, [1, 0, 0, 0, 0])
-    x_speed_switches = x_02.takeaction(
+    x_speed_switches = x_02.isPressed(
         x_speed_switches, [0, 1, 0, 0, 0])
-    x_speed_switches = x_05.takeaction(
+    x_speed_switches = x_05.isPressed(
         x_speed_switches, [0, 0, 1, 0, 0])
-    x_speed_switches = x_08.takeaction(
+    x_speed_switches = x_08.isPressed(
         x_speed_switches, [0, 0, 0, 1, 0])
-    x_speed_switches = x_1.takeaction(
+    x_speed_switches = x_1.isPressed(
         x_speed_switches, [0, 0, 0, 0, 1])
 
     # speed button adjustment
@@ -396,45 +474,62 @@ def find_speed_multiplier(x_speed_switches):
 
 def update_textboxs():
     screen.blit(TextBox(black,
-                'Launch degree =          °').txt_surface, (20, 555))
+                'Launch deg =        °', FONT_RB).txt_surface, (396, 561))
     screen.blit(TextBox(black,
-                'S1 =              (mm)').txt_surface, (230, 555))
+                'S1 =              (mm)', FONT_IMP_26).txt_surface, (19, 552))
+    screen.blit(TextBox(orange,
+                'S1 =              (mm)', FONT_IMP_26).txt_surface, (18, 550))
     screen.blit(TextBox(black,
-                'S2 =              (mm)').txt_surface, (400, 555))
+                f'{input_box2.text}', FONT_IMP_26).txt_surface, (76, 554))
     screen.blit(TextBox(black,
-                'Wall Height =              (cm)').txt_surface, (570, 555))
+                'S2 =            (mm)', FONT_RB).txt_surface, (225, 561))
     screen.blit(TextBox(black,
-                '0.1').txt_surface, (909, 423))
+                'Wall Height =           (cm)', FONT_RB).txt_surface, (583, 561))
     screen.blit(TextBox(black,
-                '0.2').txt_surface, (948, 423))
+                '0.1', FONT).txt_surface, (987, 350))
     screen.blit(TextBox(black,
-                '0.5').txt_surface, (987, 423))
+                '0.2', FONT).txt_surface, (1026, 350))
     screen.blit(TextBox(black,
-                '0.8').txt_surface, (1027, 423))
+                '0.5', FONT).txt_surface, (1065, 350))
     screen.blit(TextBox(black,
-                '1').txt_surface, (1075, 423))
+                '0.8', FONT).txt_surface, (1105, 350))
+    screen.blit(TextBox(black,
+                '1', FONT).txt_surface, (1153, 350))
+    screen.blit(TextBox(black,
+                'i', FONT).txt_surface, (777, 7))
+    screen.blit(TextBox(black,
+                '+', FONT).txt_surface, (1000, 301))
+    screen.blit(TextBox(black,
+                '-', FONT).txt_surface, (953, 300))
     screen.blit(TextBox(dark_blue,
-                'INITIATE').txt_surface, (969, 474))
+                'INITIATE', FONT).txt_surface, (969, 474))
     screen.blit(TextBox(red,
-                'RESET').txt_surface, (978, 524))
+                'RESET', FONT).txt_surface, (978, 524))
     screen.blit(TextBox(black,
-                'Speed Multiplier').txt_surface, (935, 395))
+                'Speed Multiplier : ', FONT_RB).txt_surface, (820, 355))
     screen.blit(TextBox(black,
-                'Scale : {sp}'.format(sp=scale_multiplier)).txt_surface, (820, 300))
+                'Scale :', FONT_RB).txt_surface, (820, 305))
+    screen.blit(TextBox(black, f'{scale_multiplier}',
+                FONT).txt_surface, (885, 300))
+    screen.blit(TextBox(black,
+                "Initial Velocity = {u} m/s".format(u=str(u)[:5]), FONT1).txt_surface, (822, 52))
+    screen.blit(TextBox(orange,
+                "Initial Velocity = {u} m/s".format(u=str(u)[:5]), FONT1).txt_surface, (820, 50))
     screen.blit(TextBox(mystic_green,
-                "Initial Velocity = {u} m/s".format(u=str(u)[:5])).txt_surface, (820, 25))
+                "Spring deformation = {x} m".format(x=str(x)[:5]), FONT_RB).txt_surface, (820, 125))
     screen.blit(TextBox(mystic_green,
-                "Spring deformation = {x} m".format(x=str(x)[:5])).txt_surface, (820, 75))
+                "Height over wall while passing  = {H} m".format(H=str(H-wall)[:5]), FONT_RB).txt_surface, (820, 175))
     screen.blit(TextBox(mystic_green,
-                "Height over wall while passing  = {H} m".format(H=str(H-wall)[:5])).txt_surface, (820, 125))
+                "Time required to reach the target  = {T} sec".format(T=str(time)[:4]), FONT_RB).txt_surface, (820, 225))
     screen.blit(TextBox(black,
-                "X displacement from start : {x_pos} m".format(x_pos=squash.curr_x_distance)).txt_surface, (5, 5))
+                "X displacement from start : {x_pos} m".format(x_pos=squash.curr_x_distance), FONT_RB).txt_surface, (20, 5))
     screen.blit(TextBox(black,
-                "Y displacement from ground : {y_pos} m".format(y_pos=squash.curr_y_distance)).txt_surface, (5, 30))
+                "Y displacement from ground : {y_pos} m".format(y_pos=squash.curr_y_distance), FONT_RB).txt_surface, (20, 30))
     if Auto_Manual_text_toggle:
-        screen.blit(TextBox(mystic_green, 'Auto').txt_surface, (1093, 300))
+        screen.blit(TextBox(mystic_green, 'Auto',
+                    FONT).txt_surface, (1093, 300))
     if not Auto_Manual_text_toggle:
-        screen.blit(TextBox(black, 'Manual').txt_surface, (1080, 300))
+        screen.blit(TextBox(black, 'Manual', FONT).txt_surface, (1080, 300))
 
 
 def mouse_logic(mouse_trig, press, mouse_output):
@@ -476,10 +571,16 @@ speed_multiplier = 1  # to manually control time as see fit
 toggle_start = 0
 toggle_reset = 0
 toggle_recc = False
-mouse_output = False
-mouse_trig = [False, False]
 Auto_Manual_text_toggle = False  # Manual
-press = []
+auto_mouse_trig = [False, False]
+increase_mouse_trig = [False, False]
+decrease_mouse_trig = [False, False]
+auto_mouse_output = False
+increase_mouse_output = False
+decrease_mouse_output = False
+auto_press = []
+increase_press = []
+decrease_press = []
 x_01_switch = 0
 x_02_switch = 0
 x_05_switch = 0
@@ -500,7 +601,7 @@ wall = 1  # wall's height
 h = 0.433  # shooter's height
 a = 9.81  # earth's gravitational acceleration
 
-u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
+u, x, H, ux, uy, time = calculate(s1, s2, h, deg, M, k)
 
 
 ini_sx = 50  # initial floor position on X-axis
@@ -519,47 +620,68 @@ t = 0  # initial time
 black = (0, 0, 0)
 white = (255, 255, 255)
 red = (255, 51, 51)
+light_red = (255, 102, 102)
 blue = (153, 153, 255)
 light_blue = (153, 204, 255)
 dark_blue = (0, 0, 153)
+green = (51, 255, 51)
+light_green = (180, 255, 180)
+orange = (255, 128, 0)
+light_orange = (255, 204, 153)
+dark_orange = (204, 102, 0)
 mystic_green = (29, 120, 116)
+lavender = (153, 51, 255)
 bg_color = (255, 255, 204)
+bg_color_highlight = (255, 216, 124)
 ACTIVE = (192, 192, 192)
 
 pg.init()
 pg.display.set_caption("G03_Simulation")
+FONT_NONE = pg.font.SysFont(None, 32)
 FONT = pg.font.SysFont("impact", 20)
+FONT_IMP_26 = pg.font.SysFont("impact", 26)
+FONT1 = pg.font.SysFont("impact", 32)
+FONT_RB = pg.font.SysFont('Raleway bold', 25)
 win_x = 1200
 win_y = 600
 screen = pg.display.set_mode((win_x, win_y))
 running = True
 
+# Hover
+hover_info = Hover(780, 20, 12, black)
+
 # Buttons
-Initiate = Button(900, 470, 200, 32, black)
-Reset = Button(900, 520, 200, 32, black)
+initiate = Button(900, 470, 200, 32, black)
+Reset = Button(900, 520, 200, 32, red)
 recommend = Button(1050, 298, 125, 32, black)
-x_01 = Button(900, 420, 40, 32, black)
-x_02 = Button(940, 420, 40, 32, black)
-x_05 = Button(980, 420, 40, 32, black)
-x_08 = Button(1020, 420, 40, 32, black)
-x_1 = Button(1060, 420, 40, 32, black)
-x_buttons = [x_01, x_02, x_05, x_08, x_1]
+x_01 = Button(978, 348, 40, 32, black)
+x_02 = Button(1018, 348, 40, 32, black)
+x_05 = Button(1058, 348, 40, 32, black)
+x_08 = Button(1098, 348, 40, 32, black)
+x_1 = Button(1138, 348, 40, 32, black)
+increase = Button(990, 298, 32, 32, black)
+decrease = Button(940, 298, 32, 32, black)
+
+buttons = [x_01, x_02, x_05, x_08, x_1,
+           initiate, Reset, recommend, hover_info, increase, decrease]
 
 # Input boxes
-input_box1 = InputBox(160, 555, 32, 32, '60', 'int', 2, 'degree')
-input_box2 = InputBox(270, 555, 42, 32, '303', 'int', 3, 's1')
-input_box3 = InputBox(440, 555, 42, 32, '0', 'int', 3, 's2')
-input_box4 = InputBox(680, 555, 42, 32, '100', 'int', 3, 'wall')
+input_box1 = InputBox(510, 556, 32, 25, '60', 'int', 2, 'degree', FONT, black)
+input_box2 = InputBox(70, 552, 42, 32, '303', 'int',
+                      3, 's1', FONT_IMP_26, orange)
+input_box3 = InputBox(270, 556, 42, 25, '0', 'int', 3, 's2', FONT, black)
+input_box4 = InputBox(700, 556, 42, 25, '100', 'int', 3, 'wall', FONT, black)
 input_boxes = [input_box1, input_box2, input_box3, input_box4]
 
 # Squash
-squash = Ball(pos_x, pos_y, u, 0.03, black, curr_x_distance, curr_y_distance)
+squash = Ball(pos_x, pos_y, u, 0.02, black, curr_x_distance, curr_y_distance)
 
 # Simulation
 sim = Simulation(t, last_t, pos_y_max)
 while (running):
     screen.fill((255, 255, 204))
     # alternative visual display
+    draw_scale()
     location, ct_G, ct_B = activate_ping(location, ct_G, ct_B)
     location, location_time, location_cooldown = draw_field(
         location, location_time, location_cooldown)
@@ -571,7 +693,7 @@ while (running):
     wall = input_box4.inputbox_return(wall, 100)
 
     # Calculations
-    u, x, H, ux, uy = calculate(s1, s2, h, deg, M, k)
+    u, x, H, ux, uy, time = calculate(s1, s2, h, deg, M, k)
     # simulation init#
     sim.initiate_sim(wall_logic_gate, toggle_start)
     # simulation reset#
@@ -579,21 +701,23 @@ while (running):
         wall_logic_gate, toggle_reset, toggle_start)
 
     # initiate button interaction
-    Initiate.draw(screen)
-    Reset.draw(screen)
-    recommend.draw(screen)
-    for button in x_buttons:
+    for button in buttons:
         button.draw(screen)
 
     # Buttons#
-    [toggle_start] = Initiate.takeaction([toggle_start], [1])
-    [toggle_reset] = Reset.takeaction([toggle_reset], [1])
-    toggle_recc, mouse_trig, press, mouse_output, Auto_Manual_text_toggle = recommend.takeaction_toggle(
-        toggle_recc, mouse_trig, press, mouse_output, Auto_Manual_text_toggle)
+    [toggle_start] = initiate.isPressed([toggle_start], [1])
+    [toggle_reset] = Reset.isPressed([toggle_reset], [1])
 
     # recommend button
+    toggle_recc, auto_mouse_trig, auto_press, auto_mouse_output, Auto_Manual_text_toggle = recommend.toggle_auto(
+        toggle_recc, auto_mouse_trig, auto_press, auto_mouse_output, Auto_Manual_text_toggle)
     toggle_recc, scale_multiplier = recommend_adjustment(
         toggle_recc, scale_multiplier)
+    # scale buttons
+    scale_multiplier, increase_mouse_trig, increase_press, increase_mouse_output = increase.isPressed_with_condition(
+        scale_multiplier, 1, increase_mouse_trig, increase_press, increase_mouse_output, Auto_Manual_text_toggle)
+    scale_multiplier, decrease_mouse_trig, decrease_press, decrease_mouse_output = decrease.isPressed_with_condition(
+        scale_multiplier, -1, decrease_mouse_trig, decrease_press, decrease_mouse_output, Auto_Manual_text_toggle)
 
     # get speed_multiplier
     speed_multiplier, x_speed_switches = find_speed_multiplier(
@@ -611,6 +735,9 @@ while (running):
         # เรียกใช้ฟังก์ชัน draw() ของ InputBox เพื่อทำการสร้างรูปบน Screen
         box.draw(screen)
     location_cooldown = min(location_cooldowns)
+
+    # hover over other obejcts
+    hover_info.popup(350, 40, 420, 42, white, black)
 
     pg.display.update()
     for event in pg.event.get():
