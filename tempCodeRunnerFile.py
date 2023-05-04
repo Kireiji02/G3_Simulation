@@ -1,13 +1,21 @@
-screen.fill((255, 255, 204))
-    # pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))
-    # pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))
-    # pg.draw.rect(screen, black, (ini_sx-5, ini_sy+5-h*scale_multiplier,
-    #              0.03*scale_multiplier, h*scale_multiplier))
-    # pg.draw.rect(screen, black, (ini_sx+(1+s2)*scale_multiplier,
-    #              ini_sy+5-wall*scale_multiplier, 0.03*scale_multiplier, wall*scale_multiplier))
-    # pg.draw.rect(screen, light_blue, ((ini_sx+(2+s2)*scale_multiplier),
-    #              ini_sy+3, 0.433*scale_multiplier, 4))
-    # pg.draw.rect(screen, dark_blue, ((ini_sx+(2+s1+s2)*scale_multiplier)-(0.065*scale_multiplier),
-    #              ini_sy+5-0.35*scale_multiplier, 0.13*scale_multiplier, 0.35*scale_multiplier))
-    # pg.draw.rect(screen, light_blue, ((ini_sx+(-0.8+s2)*scale_multiplier),
-    #              ini_sy+3, 0.8*scale_multiplier, 4))
+from datetime import datetime
+import pygame as pg
+
+t = 0
+delta_t = 0
+
+pg.init()
+run = True
+win_x, win_y = 800, 480
+screen = pg.display.set_mode((win_x, win_y))
+
+while (run):
+    screen.fill((255, 255, 255))
+
+    t = (str(datetime.now())[-9:-7]+str(datetime.now())[-6:-3])
+    print(t)
+
+    pg.display.update()
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
