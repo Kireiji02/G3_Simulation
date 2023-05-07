@@ -354,32 +354,32 @@ class Simulation:
             squash.draw(screen, scale_multiplier)
             if (squash.pos_y <= ini_sy-0.35*scale_multiplier):  # run simulation
                 if ((ini_sx+(1+s2)*scale_multiplier <= squash.pos_x <= (ini_sx+(1+s2)*scale_multiplier)+0.03*scale_multiplier) and (ini_sy+5-wall*scale_multiplier <= squash.pos_y <= (ini_sy+5-wall*scale_multiplier)+wall*scale_multiplier)):
-                    operation.show_status(
+                    UI.show_status(
                         1050, 425, 10, light_red, black, 'Fail')
-                    operation.show_status(
+                    UI.show_status(
                         895, 425, 10, light_blue, black, 'Frozen')
                     self.wall_logic = 1
                 if self.wall_logic == 1:
                     self.last_t = self.t
                     self.t = 0
                 else:
-                    operation.show_status(
+                    UI.show_status(
                         1050, 425, 10, ACTIVE, black, 'Status')
-                    operation.show_status(
+                    UI.show_status(
                         895, 425, 10, light_red, black, 'Simulating')
                     squash.update_position(self.t)
                     self.t += 1
             else:  # freeze simulation
-                operation.show_status(
+                UI.show_status(
                     1050, 425, 10, light_green, black, 'Pass')
-                operation.show_status(
+                UI.show_status(
                     895, 425, 10, light_blue, black, 'Frozen')
                 self.last_t = self.t
                 self.t = 0
             pg.draw.rect(screen, red, (0, sim.pos_y_max, win_x-400, 2))
         elif toggle_start == 0:
-            operation.show_status(1050, 425, 10, ACTIVE, black, 'Status')
-            operation.show_status(895, 425, 10, light_green, black, 'Ready')
+            UI.show_status(1050, 425, 10, ACTIVE, black, 'Status')
+            UI.show_status(895, 425, 10, light_green, black, 'Ready')
             self.pos_y_max = 900
             squash.reset(ini_sx-5+(0.015*scale_multiplier), ini_sy -
                          (h*scale_multiplier), squash.curr_x_distance, squash.curr_y_distance)
@@ -395,9 +395,9 @@ class Simulation:
         return toggle_reset, toggle_start
 
 
-class Operation(Rectangle):
-    def __init__(self, x=0, y=0, w=0, h=0, color=''):
-        Rectangle.__init__(self, x, y, w, h, color)
+class Operation:
+    def __init__(self):
+        pass
     # Calculate functions----------------------------------------------------------------------------------
 
     def calculate(self, s1, s2, h, deg, M, k):
@@ -414,11 +414,47 @@ class Operation(Rectangle):
         uy = u*m.sin(m.radians(deg))
         time = (s1+s2+2)/ux
         return u, x, H, ux, uy, time
+        # get speed_multiplier functions------------------------------------------------------------------------
 
-    def show_status(self, x, y, r, color, edge_color, text=''):
-        pg.draw.circle(screen, color, (x, y), r)
-        pg.draw.circle(screen, edge_color, (x, y), r, 2)
-        screen.blit(TextBox(black, text, FONT_RB_25).txt_surface, (x+26, y-6))
+    def find_speed_multiplier(self, x_speed_switches):
+        x_speed_switches = x_02.isPressed(
+            x_speed_switches, [1, 0, 0, 0, 0])
+        x_speed_switches = x_05.isPressed(
+            x_speed_switches, [0, 1, 0, 0, 0])
+        x_speed_switches = x_1.isPressed(
+            x_speed_switches, [0, 0, 1, 0, 0])
+        x_speed_switches = x_16.isPressed(
+            x_speed_switches, [0, 0, 0, 1, 0])
+        x_speed_switches = x_2.isPressed(
+            x_speed_switches, [0, 0, 0, 0, 1])
+
+        # speed button adjustment
+        if x_speed_switches[0] == 1:  # x_02_switch
+            pg.draw.rect(screen, ACTIVE, (x_02.x,
+                                          x_02.y, x_02.w, x_02.h), 5)
+            speed_multiplier = 0.2
+        elif x_speed_switches[1] == 1:  # x_05_switch
+            pg.draw.rect(screen, ACTIVE, (x_05.x,
+                                          x_05.y, x_05.w, x_05.h), 5)
+            speed_multiplier = 0.5
+        elif x_speed_switches[2] == 1:  # x_1_switch
+            pg.draw.rect(screen, ACTIVE, (x_1.x,
+                                          x_1.y, x_1.w, x_1.h), 5)
+            speed_multiplier = 1
+        elif x_speed_switches[3] == 1:  # x_16_switch
+            pg.draw.rect(screen, ACTIVE, (x_16.x,
+                                          x_16.y, x_16.w, x_16.h), 5)
+            speed_multiplier = 1.6
+        elif x_speed_switches[4] == 1:  # x_2_switch
+            pg.draw.rect(screen, ACTIVE, (x_2.x,
+                                          x_2.y, x_2.w, x_2.h), 5)
+            speed_multiplier = 2
+        return speed_multiplier, x_speed_switches
+
+
+class Ping:
+    def __init__(self):
+        pass
 
     def ping_location(self, x, y, ct_G, ct_B):
         pg.draw.circle(screen, (255, 51+ct_G, 51+ct_B),
@@ -437,19 +473,29 @@ class Operation(Rectangle):
         if location == '':
             ct_G, ct_B = 0, 0
         if location == 'degree':
-            ct_G, ct_B = operation.ping_location(
+            ct_G, ct_B = self.ping_location(
                 ini_sx, ini_sy-h*scale_multiplier, ct_G, ct_B)
         if location == 's2':
-            ct_G, ct_B = operation.ping_location(
+            ct_G, ct_B = self.ping_location(
                 ini_sx, ini_sy-h*scale_multiplier, ct_G, ct_B)
         if location == 's1':
-            ct_G, ct_B = operation.ping_location(
+            ct_G, ct_B = self.ping_location(
                 ini_sx+(2+s2)*scale_multiplier,
                 ini_sy-0.5*h*scale_multiplier, ct_G, ct_B)
         if location == 'wall':
-            ct_G, ct_B = operation.ping_location(
+            ct_G, ct_B = self.ping_location(
                 ini_sx+(1+s2)*scale_multiplier, ini_sy+5-0.5*wall*scale_multiplier, ct_G, ct_B)
         return location, ct_G, ct_B
+
+
+class UI_Manager():
+    def __init__(self):
+        pass
+
+    def show_status(self, x, y, r, color, edge_color, text=''):
+        pg.draw.circle(screen, color, (x, y), r)
+        pg.draw.circle(screen, edge_color, (x, y), r, 2)
+        screen.blit(TextBox(black, text, FONT_RB_25).txt_surface, (x+26, y-6))
 
     def draw_scale(self):
         for i in range(60):
@@ -521,42 +567,6 @@ class Operation(Rectangle):
             location = ''
 
         return location, location_time, location_cooldown
-
-    # get speed_multiplier functions------------------------------------------------------------------------
-    def find_speed_multiplier(self, x_speed_switches):
-        x_speed_switches = x_02.isPressed(
-            x_speed_switches, [1, 0, 0, 0, 0])
-        x_speed_switches = x_05.isPressed(
-            x_speed_switches, [0, 1, 0, 0, 0])
-        x_speed_switches = x_1.isPressed(
-            x_speed_switches, [0, 0, 1, 0, 0])
-        x_speed_switches = x_16.isPressed(
-            x_speed_switches, [0, 0, 0, 1, 0])
-        x_speed_switches = x_2.isPressed(
-            x_speed_switches, [0, 0, 0, 0, 1])
-
-        # speed button adjustment
-        if x_speed_switches[0] == 1:  # x_02_switch
-            pg.draw.rect(screen, ACTIVE, (x_02.x,
-                                          x_02.y, x_02.w, x_02.h), 5)
-            speed_multiplier = 0.2
-        elif x_speed_switches[1] == 1:  # x_05_switch
-            pg.draw.rect(screen, ACTIVE, (x_05.x,
-                                          x_05.y, x_05.w, x_05.h), 5)
-            speed_multiplier = 0.5
-        elif x_speed_switches[2] == 1:  # x_1_switch
-            pg.draw.rect(screen, ACTIVE, (x_1.x,
-                                          x_1.y, x_1.w, x_1.h), 5)
-            speed_multiplier = 1
-        elif x_speed_switches[3] == 1:  # x_16_switch
-            pg.draw.rect(screen, ACTIVE, (x_16.x,
-                                          x_16.y, x_16.w, x_16.h), 5)
-            speed_multiplier = 1.6
-        elif x_speed_switches[4] == 1:  # x_2_switch
-            pg.draw.rect(screen, ACTIVE, (x_2.x,
-                                          x_2.y, x_2.w, x_2.h), 5)
-            speed_multiplier = 2
-        return speed_multiplier, x_speed_switches
 
     # update text function---------------------------------------------------------------------------------
 
@@ -639,6 +649,8 @@ class Operation(Rectangle):
 
 # Class declaration
 operation = Operation()
+ping = Ping()
+UI = UI_Manager()
 
 # logic#---------------------------------------------------------------------------------------------------#
 scale_multiplier = 300  # to manually fit the screen
@@ -755,8 +767,8 @@ sim = Simulation(t, last_t, pos_y_max)
 while (running):
     screen.fill((255, 255, 204))
     # alternative visual display
-    location, ct_G, ct_B = operation.activate_ping(location, ct_G, ct_B)
-    location, location_time, location_cooldown = operation.draw_field(
+    location, ct_G, ct_B = ping.activate_ping(location, ct_G, ct_B)
+    location, location_time, location_cooldown = UI.draw_field(
         location, location_time, location_cooldown)
 
     # inputtable variables
@@ -785,7 +797,7 @@ while (running):
     # recommend button
     toggle_recc, Auto_Manual_text_toggle = recommend.toggle_auto(
         toggle_recc, Auto_Manual_text_toggle)
-    toggle_recc, scale_multiplier = operation.recommend_adjustment(
+    toggle_recc, scale_multiplier = UI.recommend_adjustment(
         toggle_recc, scale_multiplier)
     # scale buttons
     scale_multiplier, increase_mouse_trig = increase.isPressed_with_condition(
@@ -797,7 +809,7 @@ while (running):
     speed_multiplier, x_speed_switches = operation.find_speed_multiplier(
         x_speed_switches)
     # Textboxes
-    operation.update_textboxs()
+    UI.update_textboxs()
 
     # ทำการเรียก InputBox ทุกๆตัว โดยการ Loop เข้าไปยัง list ที่เราเก็บค่า InputBox ไว้
     location_cooldowns = []
@@ -810,7 +822,7 @@ while (running):
         box.draw(screen)
     location_cooldown = min(location_cooldowns)
     # draw scale
-    operation.draw_scale()
+    UI.draw_scale()
     # hover over other obejcts
     option_switch = hover_info.popup(
         350, 40, 440, 330, white, black, option_switch)
