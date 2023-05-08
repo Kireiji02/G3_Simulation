@@ -23,32 +23,32 @@ class Circle:
         self.r = r  # Radius
         self.color = color
 
-    def draw(self, screen,):
+    def draw(self, screen):
         pg.draw.circle(screen, self.color, (self.x, self.y), self.r, 2)
 
 
 class Hover(Circle):
-    def __init__(self, x_circle=0, y_circle=0, r_circle=0, circle_color='', hover_chain=False, cooldown_timer=0):
-        Circle.__init__(self, x_circle, y_circle, r_circle, circle_color)
-        self.hover_chain = hover_chain
-        self.cooldown_timer = cooldown_timer
-
-    def isChained(self):
-        if ((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2):
-            self.hover_chain = True
-        if self.cooldown_timer < 1:
-            if not (((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2) or ((350 <= pg.mouse.get_pos()[0] <= (350+440)) and (40 <= pg.mouse.get_pos()[1] <= (40+330)))):
-                self.hover_chain = False
+    def __init__(self, x=0, y=0, r=0, color=''):
+        Circle.__init__(self, x, y, r, color)
+        self.hover_succession = False
+        self.cooldown_timer = 0
 
     def isMouseOn(self):
-        if self.hover_chain:
+        if self.hover_succession:
             return True if (((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2) or ((350 <= pg.mouse.get_pos()[0] <= (350+440)) and (40 <= pg.mouse.get_pos()[1] <= (40+330)))) else False
         else:
             return True if ((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2) else False
 
+    def isSuccessive(self):
+        if ((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2):
+            self.hover_succession = True
+        if self.cooldown_timer < 1:
+            if not (((pg.mouse.get_pos()[0] - self.x)**2 + (pg.mouse.get_pos()[1] - self.y)**2 <= (self.r)**2) or ((350 <= pg.mouse.get_pos()[0] <= (350+440)) and (40 <= pg.mouse.get_pos()[1] <= (40+330)))):
+                self.hover_succession = False
+
     def popup(self, x_rect=0, y_rect=0, w_rect=0, h_rect=0, rect_color='', rect_edge_color='', option_switch=False):
         popup_cooldown = False if self.isMouseOn() else True
-        self.isChained()
+        self.isSuccessive()
         if popup_cooldown:
             if self.cooldown_timer > 0:
                 self.cooldown_timer -= 1
@@ -88,11 +88,12 @@ class Hover(Circle):
 
 
 class Button(Rectangle):
-    def __init__(self, x=0, y=0, w=0, h=0, color='', mouse_output=False, press=[], auto=[False, False]):
+    def __init__(self, x=0, y=0, w=0, h=0, color=''):
         Rectangle.__init__(self, x, y, w, h, color)
-        self.mouse_output = mouse_output
-        self.press = press
-        self.auto = auto
+        self.mouse_output = False
+        self.press = []
+        self.auto = [False, False]
+        self.toggle_recc = False
 
     def isMouseOn(self):
         return True if self.x <= pg.mouse.get_pos()[0] <= (self.x + self.w) and self.y <= pg.mouse.get_pos()[1] <= (self.y + self.h) else False
@@ -111,8 +112,28 @@ class Button(Rectangle):
             pg.draw.rect(screen, self.color,
                          (self.x, self.y, self.w, self.h), 2)
         return var
-    # optimised mouse input
 
+    def isPressed_with_condition(self, var, increment, mouse_trig, text_toggle):
+        if text_toggle:
+            pg.draw.rect(screen, ACTIVE,
+                         (self.x, self.y, self.w, self.h), 2)
+        else:
+            if self.isMouseOn():
+                mouse_trig = self.mouse_logic(mouse_trig)
+                if self.mouse_output:
+                    pg.draw.rect(screen, ACTIVE,
+                                 (self.x, self.y, self.w, self.h), 5)
+                    var += increment
+                    self.mouse_output = False
+                else:
+                    pg.draw.rect(screen, ACTIVE,
+                                 (self.x, self.y, self.w, self.h), 2)
+            else:
+                pg.draw.rect(screen, self.color,
+                             (self.x, self.y, self.w, self.h), 2)
+        return var, mouse_trig
+
+    # optimised mouse input
     def mouse_logic(self, mouse_trig):
         mouse_release = True if pg.mouse.get_pressed()[0] == False else False
         if mouse_release:  # if mouse button is released
@@ -131,42 +152,36 @@ class Button(Rectangle):
         return mouse_trig
 
     # Manual to auto with a click and vice versa.
-    def toggle_auto(self, var, Auto_Manual_text_toggle):
+    def toggle_auto(self, text_toggle):
         if self.isMouseOn():
             self.auto = self.mouse_logic(self.auto)
             if self.mouse_output:
                 pg.draw.rect(screen, ACTIVE,
                              (self.x, self.y, self.w, self.h), 5)
-                Auto_Manual_text_toggle = True
-                var = True
+                text_toggle = True
+                self.toggle_recc = True
             else:
                 pg.draw.rect(screen, ACTIVE,
                              (self.x, self.y, self.w, self.h), 2)
-                Auto_Manual_text_toggle = False
-                var = False
+                text_toggle = False
+                self.toggle_recc = False
         else:
             pg.draw.rect(screen, black, (self.x, self.y, self.w, self.h), 2)
-        return var, Auto_Manual_text_toggle
+        return text_toggle
+    # toggle scale recommendation
 
-    def isPressed_with_condition(self, var, increment, mouse_trig, Auto_Manual_text_toggle):
-        if Auto_Manual_text_toggle:
-            pg.draw.rect(screen, ACTIVE,
-                         (self.x, self.y, self.w, self.h), 2)
-        else:
-            if self.isMouseOn():
-                mouse_trig = self.mouse_logic(mouse_trig)
-                if self.mouse_output:
-                    pg.draw.rect(screen, ACTIVE,
-                                 (self.x, self.y, self.w, self.h), 5)
-                    var += increment
-                    self.mouse_output = False
-                else:
-                    pg.draw.rect(screen, ACTIVE,
-                                 (self.x, self.y, self.w, self.h), 2)
-            else:
-                pg.draw.rect(screen, self.color,
-                             (self.x, self.y, self.w, self.h), 2)
-        return var, mouse_trig
+    def recommend_adjustment(self, scale_multiplier):
+        if self.toggle_recc == True:
+            while (2+s2+s1)*scale_multiplier < 690:
+                scale_multiplier += 1
+                if (2+s2+s1)*scale_multiplier >= 690:
+                    break
+        if self.toggle_recc == True:
+            while (2+s2+s1)*scale_multiplier > 700:
+                scale_multiplier -= 1
+                if (2+s2+s1)*scale_multiplier <= 700:
+                    break
+        return scale_multiplier
 
     def select_option(self, option_switch, pair):
         if self.isMouseOn():
@@ -190,9 +205,9 @@ class Button(Rectangle):
 
 
 class TextBox:
-    def __init__(self, col, text='', font=''):
+    def __init__(self, color, text='', font=''):
         # self.rect = pg.Rect(x, y, w, h)
-        self.color = col
+        self.color = color
         self.text = text
         self.txt_surface = font.render(text, True, self.color)
 
@@ -201,7 +216,7 @@ class TextBox:
         Screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y))
 
 
-class InputBox:
+class InputBox():
 
     def __init__(self, x, y, w, h, text='', type='', l=100, location='', font='', color=''):
         self.rect = pg.Rect(x, y, w, h)
@@ -304,6 +319,10 @@ class Ball:
         self.lx = []
         self.ly = []
 
+    def draw(self, screen, scale_multiplier):
+        pg.draw.circle(screen, self.color,
+                       (self.pos_x, self.pos_y), self.size*scale_multiplier)
+
     def update_position(self, t):
         self.pos_x = ini_sx+(ux*(t/1000*speed_multiplier))*scale_multiplier
         self.pos_y = (ini_sy-h*scale_multiplier)-(uy*(t/1000*speed_multiplier) +
@@ -328,20 +347,17 @@ class Ball:
         self.lx = []
         self.ly = []
 
-    def draw(self, screen, scale_multiplier):
-        pg.draw.circle(screen, self.color,
-                       (self.pos_x, self.pos_y), self.size*scale_multiplier)
 
 # Simulation Object-------------------------------------------------------------------------------------
 
 
 class Simulation:
 
-    def __init__(self, t, last_t, pos_y_max, wall_logic=0):
+    def __init__(self, t, last_t, pos_y_max):
         self.t = t
         self.last_t = last_t
         self.pos_y_max = pos_y_max
-        self.wall_logic = wall_logic
+        self.wall_logic = False
 
     def initiate_sim(self, toggle_start):
         if self.pos_y_max > squash.pos_y:
@@ -358,8 +374,8 @@ class Simulation:
                         1050, 425, 10, light_red, black, 'Fail')
                     UI.show_status(
                         895, 425, 10, light_blue, black, 'Frozen')
-                    self.wall_logic = 1
-                if self.wall_logic == 1:
+                    self.wall_logic = True
+                if self.wall_logic:
                     self.last_t = self.t
                     self.t = 0
                 else:
@@ -391,7 +407,7 @@ class Simulation:
             self.t = 0
             toggle_reset = 0
             toggle_start = 0
-            self.wall_logic = 0
+            self.wall_logic = False
         return toggle_reset, toggle_start
 
 
@@ -623,28 +639,12 @@ class UI_Manager():
                     "X displacement from start : {x_pos} m".format(x_pos=squash.curr_x_distance), FONT_RB_25).txt_surface, (20, 5))
         screen.blit(TextBox(black,
                     "Y displacement from ground : {y_pos} m".format(y_pos=squash.curr_y_distance), FONT_RB_25).txt_surface, (20, 30))
-        if Auto_Manual_text_toggle:
+        if text_toggle:
             screen.blit(TextBox(mystic_green, 'Auto',
                         FONT_IMP_20).txt_surface, (1093, 300))
-        if not Auto_Manual_text_toggle:
+        if not text_toggle:
             screen.blit(TextBox(black, 'Manual',
                         FONT_IMP_20).txt_surface, (1080, 300))
-
-    # toggle scale recommnedation
-
-    def recommend_adjustment(self, toggle_recc, scale_multiplier):
-        if toggle_recc == True:
-            while (2+s2+s1)*scale_multiplier < 690:
-                scale_multiplier += 1
-                if (2+s2+s1)*scale_multiplier >= 690:
-                    break
-        if toggle_recc == True:
-            while (2+s2+s1)*scale_multiplier > 700:
-                scale_multiplier -= 1
-                if (2+s2+s1)*scale_multiplier <= 700:
-                    break
-        # toggle_recc = 0
-        return toggle_recc, scale_multiplier
 
 
 # Class declaration
@@ -657,10 +657,9 @@ scale_multiplier = 300  # to manually fit the screen
 speed_multiplier = 1  # to manually control time as see fit
 toggle_start = 0
 toggle_reset = 0
-toggle_recc = False
 increase_mouse_trig = [False, False]
 decrease_mouse_trig = [False, False]
-Auto_Manual_text_toggle = False  # Manual
+text_toggle = False  # Manual
 x_02_switch = 0
 x_05_switch = 0
 x_1_switch = 1
@@ -672,8 +671,8 @@ location = ''
 x_speed_switches = [x_02_switch, x_05_switch,
                     x_1_switch, x_16_switch, x_2_switch]
 # Scientific variables#---------------------------------------------------------------------------------------------------#
-M = 0.23  # net weight of ball and platform
-k = 0.88  # spring constant
+M = 0.243  # net weight of ball and platform
+k = 0.88865  # spring constant
 deg = 60  # degree
 s1 = 0.303  # at target
 s2 = 0  # at shooter
@@ -795,15 +794,13 @@ while (running):
     [toggle_reset] = Reset.isPressed([toggle_reset], [1])
 
     # recommend button
-    toggle_recc, Auto_Manual_text_toggle = recommend.toggle_auto(
-        toggle_recc, Auto_Manual_text_toggle)
-    toggle_recc, scale_multiplier = UI.recommend_adjustment(
-        toggle_recc, scale_multiplier)
+    text_toggle = recommend.toggle_auto(text_toggle)
+    scale_multiplier = recommend.recommend_adjustment(scale_multiplier)
     # scale buttons
     scale_multiplier, increase_mouse_trig = increase.isPressed_with_condition(
-        scale_multiplier, 1, increase_mouse_trig, Auto_Manual_text_toggle)
+        scale_multiplier, 1, increase_mouse_trig, text_toggle)
     scale_multiplier, decrease_mouse_trig = decrease.isPressed_with_condition(
-        scale_multiplier, -1, decrease_mouse_trig, Auto_Manual_text_toggle)
+        scale_multiplier, -1, decrease_mouse_trig, text_toggle)
 
     # get speed_multiplier
     speed_multiplier, x_speed_switches = operation.find_speed_multiplier(
