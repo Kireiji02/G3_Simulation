@@ -793,14 +793,15 @@ while (running):
     [toggle_start] = initiate.isPressed([toggle_start], [1])
     [toggle_reset] = Reset.isPressed([toggle_reset], [1])
 
-    # recommend button
-    text_toggle = recommend.toggle_auto(text_toggle)
-    scale_multiplier = recommend.recommend_adjustment(scale_multiplier)
     # scale buttons
     scale_multiplier, increase_mouse_trig = increase.isPressed_with_condition(
         scale_multiplier, 1, increase_mouse_trig, text_toggle)
     scale_multiplier, decrease_mouse_trig = decrease.isPressed_with_condition(
         scale_multiplier, -1, decrease_mouse_trig, text_toggle)
+
+    # recommend button
+    text_toggle = recommend.toggle_auto(text_toggle)
+    scale_multiplier = recommend.recommend_adjustment(scale_multiplier)
 
     # get speed_multiplier
     speed_multiplier, x_speed_switches = operation.find_speed_multiplier(
@@ -840,5 +841,3 @@ while (running):
         if event.type == pg.QUIT:
             pg.quit()
             exit()
-'''pg.draw.circle(screen, black, (ini_sx-5+(0.015*scale_multiplier),
-                   ini_sy-(h*scale_multiplier)), 0.03*scale_multiplier)'''
