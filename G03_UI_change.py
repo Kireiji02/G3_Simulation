@@ -13,7 +13,7 @@ class Rectangle:
 
     def draw(self, screen):
         pg.draw.rect(screen, self.color,
-                     (self.x, self.y, self.w, self.h), 2)
+                     (self.x, self.y, self.w, self.h), 2, 10)
 
 
 class Circle:
@@ -68,7 +68,7 @@ class Hover(Circle):
                         FONT_RB_25).txt_surface, (360, 100))
             screen.blit(TextBox(black, "Scaling can be changed between Manual and Auto",
                         FONT_RB_25).txt_surface, (360, 125))
-            screen.blit(TextBox(black, "Grid size is 10 cm",
+            screen.blit(TextBox(black, "Main scale displayed on the left are 10 cm apart",
                         FONT_RB_25).txt_surface, (360, 150))
             screen.blit(TextBox(black, "Variables",
                         FONT_RB_30).txt_surface, (360, 200))
@@ -102,35 +102,35 @@ class Button(Rectangle):
         if self.isMouseOn():
             if pg.mouse.get_pressed()[0]:
                 pg.draw.rect(screen, ACTIVE,
-                             (self.x, self.y, self.w, self.h), 5)
+                             (self.x, self.y, self.w, self.h), 5, 10)
                 for i in range(len(var)):
                     var[i] = value[i]
             else:
                 pg.draw.rect(screen, ACTIVE,
-                             (self.x, self.y, self.w, self.h), 2)
+                             (self.x, self.y, self.w, self.h), 2, 10)
         else:
             pg.draw.rect(screen, self.color,
-                         (self.x, self.y, self.w, self.h), 2)
+                         (self.x, self.y, self.w, self.h), 2, 10)
         return var
 
     def isPressed_with_condition(self, var, increment, mouse_trig, text_toggle):
         if text_toggle:
             pg.draw.rect(screen, ACTIVE,
-                         (self.x, self.y, self.w, self.h), 2)
+                         (self.x, self.y, self.w, self.h), 2, 10)
         else:
             if self.isMouseOn():
                 mouse_trig = self.mouse_logic(mouse_trig)
                 if self.mouse_output:
                     pg.draw.rect(screen, ACTIVE,
-                                 (self.x, self.y, self.w, self.h), 5)
+                                 (self.x, self.y, self.w, self.h), 5, 10)
                     var += increment
                     self.mouse_output = False
                 else:
                     pg.draw.rect(screen, ACTIVE,
-                                 (self.x, self.y, self.w, self.h), 2)
+                                 (self.x, self.y, self.w, self.h), 2, 10)
             else:
                 pg.draw.rect(screen, self.color,
-                             (self.x, self.y, self.w, self.h), 2)
+                             (self.x, self.y, self.w, self.h), 2, 10)
         return var, mouse_trig
 
     # optimised mouse input
@@ -157,16 +157,17 @@ class Button(Rectangle):
             self.auto = self.mouse_logic(self.auto)
             if self.mouse_output:
                 pg.draw.rect(screen, ACTIVE,
-                             (self.x, self.y, self.w, self.h), 5)
+                             (self.x, self.y, self.w, self.h), 5, 10)
                 text_toggle = True
                 self.toggle_recc = True
             else:
                 pg.draw.rect(screen, ACTIVE,
-                             (self.x, self.y, self.w, self.h), 2)
+                             (self.x, self.y, self.w, self.h), 2, 10)
                 text_toggle = False
                 self.toggle_recc = False
         else:
-            pg.draw.rect(screen, black, (self.x, self.y, self.w, self.h), 2)
+            pg.draw.rect(
+                screen, black, (self.x, self.y, self.w, self.h), 2, 10)
         return text_toggle
     # toggle scale recommendation
 
@@ -219,7 +220,7 @@ class TextBox:
 class InputBox():
 
     def __init__(self, x, y, w, h, text='', type='', l=100, location='', font='', color=''):
-        self.rect = pg.Rect(x, y, w, h)
+        self.rect = pg.Rect(x, y, w, h,)
         self.color = color
         self.default_color = color
         self.text = text
@@ -287,7 +288,7 @@ class InputBox():
         # Blit the text.
         Screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y))
         # Blit the rect.
-        pg.draw.rect(Screen, self.color, self.rect, 2)
+        pg.draw.rect(Screen, self.color, self.rect, 2, 10)
 
     def inputbox_return(self, var, multiplier=1):
         if self.return_text != '':
@@ -514,17 +515,14 @@ class UI_Manager():
         screen.blit(TextBox(black, text, FONT_RB_25).txt_surface, (x+26, y-6))
 
     def draw_scale(self):
-        for i in range(int(win_x // (0.1*scale_multiplier))):
-            pg.draw.rect(screen, ACTIVE, (0, ini_sy+5-(0.1*i*scale_multiplier),
-                                          win_x-400, 1))
-            pg.draw.rect(screen, ACTIVE, (0+(0.1*i*scale_multiplier), 0,
-                                          1, win_y-65))
+        for i in range(60):
+            pg.draw.rect(screen, black, (0, ini_sy-(0.1*i*scale_multiplier),
+                                         0.05*scale_multiplier, 0.01*scale_multiplier))
+            pg.draw.rect(screen, black, (0, ini_sy-(0.05*scale_multiplier)-(0.1*i*scale_multiplier),
+                                         0.025*scale_multiplier, 0.01*scale_multiplier))
 
     # set field function--------------------------------------------------------------------------
-
     def draw_field(self, location, location_time, location_cooldown):
-        pg.draw.rect(screen, white, (0, 0, 350, 60))
-        pg.draw.rect(screen, bg_color, (0, ini_sy+5, win_x-400, 70))
         pg.draw.rect(screen, bg_color_highlight,
                      (0, win_y-65, 215, 66))  # S1 input highlight
         pg.draw.rect(screen, black, (0, ini_sy+5, win_x-400, 2))  # floor
@@ -543,7 +541,7 @@ class UI_Manager():
                      (800, 40, 400, 60))  # output highlight
         pg.draw.rect(screen, black, (win_x-400, 0, 2, win_y))  # divider
         pg.draw.rect(screen, black, (800, 275, win_x-800, 2))
-        pg.draw.rect(screen, black, (72, 554, 52, 32), 2)  # S1 inputbox shadow
+        # pg.draw.rect(screen, black, (72, 554, 52, 32), 2)  # S1 inputbox shadow
         # alternative mode
         if location == 'degree':
             pg.draw.line(screen, red, (ini_sx-1, ini_sy-h*scale_multiplier),
@@ -592,8 +590,8 @@ class UI_Manager():
     def update_textboxs(self):
         screen.blit(TextBox(black,
                     'Launch deg =        °', FONT_RB_25).txt_surface, (396, 561))
-        screen.blit(TextBox(black,
-                    'S1 =              (mm)', FONT_IMP_26).txt_surface, (19, 552))
+        # screen.blit(TextBox(black,
+        #             'S1 =              (mm)', FONT_IMP_26).txt_surface, (19, 552))
         screen.blit(TextBox(orange,
                     'S1 =              (mm)', FONT_IMP_26).txt_surface, (18, 550))
         screen.blit(TextBox(black,
@@ -628,8 +626,8 @@ class UI_Manager():
                     'Scale :', FONT_RB_25).txt_surface, (820, 305))
         screen.blit(TextBox(black, f'{scale_multiplier}',
                     FONT_IMP_20).txt_surface, (885, 300))
-        screen.blit(TextBox(black,
-                    "Spring deformation = {x} m".format(x=str(x)[:5]), FONT_IMP_30).txt_surface, (822, 52))
+        # screen.blit(TextBox(black,
+        #             "Spring deformation = {x} m".format(x=str(x)[:5]), FONT_IMP_30).txt_surface, (822, 52))
         screen.blit(TextBox(orange,
                     "Spring deformation = {x} m".format(x=str(x)[:5]), FONT_IMP_30).txt_surface, (820, 50))
         screen.blit(TextBox(mystic_green,
@@ -713,18 +711,20 @@ light_orange = (255, 204, 153)
 dark_orange = (204, 102, 0)
 mystic_green = (29, 120, 116)
 lavender = (153, 51, 255)
-bg_color = (255, 255, 204)
+bg_color = (255, 255, 255)
 bg_color_highlight = (255, 216, 124)
 ACTIVE = (192, 192, 192)
 
 pg.init()
 pg.display.set_caption("G03_Simulation")
-FONT_NONE = pg.font.SysFont(None, 32)
-FONT_IMP_20 = pg.font.SysFont("impact", 20)
-FONT_IMP_26 = pg.font.SysFont("impact", 26)
-FONT_IMP_30 = pg.font.SysFont("impact", 30)
-FONT_RB_25 = pg.font.SysFont('Raleway bold', 25)
-FONT_RB_30 = pg.font.SysFont('Raleway bold', 30)
+FONT_NONE = pg.font.SysFont("Poppins-Light", 32)  # Change from None 32
+FONT_IMP_20 = pg.font.SysFont("Poppins-Light", 20)  # Change from impact 20
+FONT_IMP_26 = pg.font.SysFont("Poppins-Light", 26)  # Change from impact 26
+FONT_IMP_30 = pg.font.SysFont("Poppins-Light", 30)  # Change from impact 30
+# Change from Raleway bold 25
+FONT_RB_25 = pg.font.SysFont('Poppins-Light', 25)
+# Change from Raleway bold 30
+FONT_RB_30 = pg.font.SysFont('Poppins-Light', 30)
 win_x = 1200
 win_y = 600
 screen = pg.display.set_mode((win_x, win_y))
@@ -767,12 +767,9 @@ squash = Ball(pos_x, pos_y, u, 0.02, black, curr_x_distance, curr_y_distance)
 # Simulation
 sim = Simulation(t, last_t, pos_y_max)
 while (running):
-    screen.fill(white)
+    screen.fill((255, 255, 204))
     # alternative visual display
     location, ct_G, ct_B = ping.activate_ping(location, ct_G, ct_B)
-    # draw scale
-    UI.draw_scale()
-    # draw field
     location, location_time, location_cooldown = UI.draw_field(
         location, location_time, location_cooldown)
 
@@ -825,6 +822,8 @@ while (running):
         # เรียกใช้ฟังก์ชัน draw() ของ InputBox เพื่อทำการสร้างรูปบน Screen
         box.draw(screen)
     location_cooldown = min(location_cooldowns)
+    # draw scale
+    UI.draw_scale()
     # hover over other obejcts
     option_switch = hover_info.popup(
         350, 40, 440, 330, white, black, option_switch)
