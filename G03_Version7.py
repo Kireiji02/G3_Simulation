@@ -28,10 +28,12 @@ class Circle:
 
 
 class Hover(Circle):
-    def __init__(self, x=0, y=0, r=0, color=''):
+    def __init__(self, x=0, y=0, r=0, color='', x_impact_list=[], z_impact_list=[]):
         Circle.__init__(self, x, y, r, color)
         self.hover_succession = False
         self.cooldown_timer = 0
+        self.x_impact_list = x_impact_list
+        self.z_impact_list = z_impact_list
 
     def isMouseOn(self, x=0, y=0, w=0, h=0):
         if self.hover_succession:
@@ -104,20 +106,28 @@ class Hover(Circle):
                          (x_rect, y_rect, w_rect, h_rect), 2)
             pg.draw.polygon(
                 screen, light_blue, ((820, 500), (920, 327), (1020, 500)), 4)
-            pg.draw.circle(screen, blue, (920, 500 -
+            pg.draw.circle(screen, blue, (920+(z_tune*100*4), 500 -
                            (s1*100*4)), 13*2, 4)
             pg.draw.polygon(
                 screen, black, ((825, 325), (830, 320), (835, 325), (830, 320), (830, 350), (860, 350), (855, 345), (860, 350), (855, 355), (860, 350), (830, 350), (830, 320)), 2)
-            pg.draw.line(screen, black, (1050, 320), (1050, 570), 2)
-            pg.draw.line(screen, black, (1120, 320), (1120, 570), 1)
-            pg.draw.line(screen, black, (1190, 320), (1190, 570), 2)
-            pg.draw.circle(screen, pink, (950, 400), 5)
-            pg.draw.circle(screen, pink, (930, 398), 5)
-            pg.draw.circle(screen, pink, (947, 380), 5)
-            pg.draw.circle(screen, pink, (920, 378), 5)
-            pg.draw.circle(screen, pink, (890, 400), 5)
-            pg.draw.circle(screen, pink, (900, 350), 5)
-            screen.blit(TextBox(black, "Calibrtation",
+            pg.draw.line(screen, black, (1050, 320), (1050, 500), 2)
+            pg.draw.line(screen, black, (1120, 320), (1120, 500), 1)
+            pg.draw.line(screen, black, (1190, 320), (1190, 500), 2)
+            for i, j in zip(range(len(self.x_impact_list)), (range(len(self.z_impact_list)))):
+                pg.draw.circle(
+                    screen, pink, (920+(0.4*int(self.z_impact_list[j])), 500-(0.4*int(self.x_impact_list[i]))), 5)
+            if len(self.x_impact_list) != 0:
+                pg.draw.circle(screen, black, (920+(0.4*sum(self.z_impact_list)/len(self.z_impact_list)),
+                               500-(0.4*sum(self.x_impact_list)/len(self.x_impact_list))), 5)
+
+            for i in range(len(self.x_impact_list)):
+                screen.blit(TextBox(black, f'{self.x_impact_list[-i-1]}',
+                                    FONT_IMP_20).txt_surface, (1070, 340+(i*30)))
+                screen.blit(TextBox(black, f'{self.z_impact_list[-i-1]}',
+                                    FONT_IMP_20).txt_surface, (1140, 340+(i*30)))
+            pg.draw.rect(screen, bg_color, (1050, 520, 150, 80))
+
+            screen.blit(TextBox(black, "Calibration",
                         FONT_RB_30).txt_surface, (810, 280))
             screen.blit(TextBox(black, "x",
                         FONT_RB_25).txt_surface, (810, 315))
@@ -127,6 +137,30 @@ class Hover(Circle):
                         FONT_RB_25).txt_surface, (860, 520))
             screen.blit(TextBox(black, "Z",
                         FONT_RB_25).txt_surface, (960, 520))
+            screen.blit(TextBox(black,
+                                f'{int(s1*1000)}', FONT_IMP_20).txt_surface, (830, 550))
+            screen.blit(TextBox(black, "(mm)             (mm)",
+                        FONT_RB_25).txt_surface, (870, 555))
+            screen.blit(TextBox(black, "x (mm)   z (mm)",
+                        FONT_RB_25).txt_surface, (1055, 280))
+            screen.blit(TextBox(black, "diff x :             (mm)",
+                        FONT_RB_25).txt_surface, (1035, 520))
+            screen.blit(TextBox(black, "diff z :             (mm)",
+                        FONT_RB_25).txt_surface, (1035, 560))
+            if len(self.x_impact_list) != 0:
+                x_var = int((sum(self.x_impact_list) /
+                             len(self.x_impact_list))-(s1*1000))
+                z_var = int((sum(self.z_impact_list) /
+                             len(self.z_impact_list))-(z_tune*1000))
+                # color showing if average accuracy is inside the target space
+                x_color = mystic_green if abs(x_var) <= 60 else red
+                z_color = mystic_green if abs(z_var) <= 60 else red
+
+                screen.blit(TextBox(x_color, f'{x_var}'[:6],
+                            FONT_IMP_20).txt_surface, (1105, 515))
+                screen.blit(TextBox(z_color, f'{z_var}'[:6],
+                            FONT_IMP_20).txt_surface, (1105, 555))
+
             # buttons
             z_tune = align_z.inputbox_return(z_tune, 1000)
             for box in align_input_boxes:
@@ -320,7 +354,7 @@ class InputBox():
                     if self.type == 'str':
                         self.text += event.unicode
                     elif self.type == 'int':
-                        if event.unicode.isnumeric():
+                        if event.unicode.isnumeric() or event.unicode == '-':
                             if len(self.text) < self.len and self.text != '0':
                                 self.text += event.unicode
                         else:
@@ -820,12 +854,12 @@ input_box3 = InputBox(270, 556, 42, 25, '0', 'int',
                       3, 's2', FONT_IMP_20, black)
 input_box4 = InputBox(700, 556, 42, 25, '100', 'int',
                       3, 'wall', FONT_IMP_20, black)
-align_x = InputBox(850, 550, 42, 25, '303', 'int', 3, '', FONT_IMP_20, black)
-align_z = InputBox(950, 550, 42, 25, '0', 'int', 3, '', FONT_IMP_20, black)
+align_z = InputBox(930, 550, 42, 25, '0', 'int', 4, '', FONT_IMP_20, black)
 impact_x = InputBox(1060, 300, 42, 25, '0', 'int', 3, '', FONT_IMP_20, black)
 impact_z = InputBox(1130, 300, 42, 25, '0', 'int', 3, '', FONT_IMP_20, black)
+
 input_boxes = [input_box1, input_box2, input_box3, input_box4]
-align_input_boxes = [align_x, align_z, impact_x, impact_z]
+align_input_boxes = [align_z, impact_x, impact_z]
 
 # Squash
 squash = Ball(pos_x, pos_y, u, 0.02, black, curr_x_distance, curr_y_distance)
@@ -902,6 +936,8 @@ while (running):
     for event in pg.event.get():
         for box in input_boxes:
             box.handle_event(event)
+        for box in align_input_boxes:
+            box.handle_event(event)
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_KP_MINUS:
                 if toggle_start == 0:
@@ -911,6 +947,16 @@ while (running):
                 if toggle_start == 0:
                     scale_multiplier += 10
                 toggle_reset = 1
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_DOWN:
+                hover_align.x_impact_list.append(int(impact_x.text))
+                hover_align.z_impact_list.append(int(impact_z.text))
+                impact_x.text = '0'
+                impact_z.text = '0'
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_UP:
+                hover_align.x_impact_list = hover_align.x_impact_list[:-1]
+                hover_align.z_impact_list = hover_align.z_impact_list[:-1]
         if event.type == pg.QUIT:
             pg.quit()
             exit()
