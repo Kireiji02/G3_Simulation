@@ -508,6 +508,7 @@ class Operation:
         # print("u =", str(u)[:5])
         x = (19.6*M*m.sin(m.radians(deg)) +
              m.sqrt((19.6*M*m.sin(m.radians(deg))**2+4*k*1000*M*(u**2))))/(2*k*1000)
+        x = (6.6667*x)-0.455
         # print("x =", str(x)[:5])
         H = m.tan(m.radians(deg))*(s1+1)-4.9 * \
             ((s1+1)/(u*m.cos(m.radians(deg))))**2+h
@@ -765,8 +766,8 @@ location = ''
 x_speed_switches = [x_02_switch, x_05_switch,
                     x_1_switch, x_16_switch, x_2_switch]
 # Scientific variables#---------------------------------------------------------------------------------------------------#
-M = 0.243  # net weight of ball and platform
-k = 0.88865  # spring constant
+M = 0.317  # net weight of ball and platform
+k = 0.897  # spring constant
 deg = 60  # degree
 s1 = 0.303  # at target
 s2 = 0  # at shooter
@@ -855,8 +856,8 @@ input_box3 = InputBox(270, 556, 42, 25, '0', 'int',
 input_box4 = InputBox(700, 556, 42, 25, '100', 'int',
                       3, 'wall', FONT_IMP_20, black)
 align_z = InputBox(930, 550, 42, 25, '0', 'int', 4, '', FONT_IMP_20, black)
-impact_x = InputBox(1060, 300, 42, 25, '0', 'int', 3, '', FONT_IMP_20, black)
-impact_z = InputBox(1130, 300, 42, 25, '0', 'int', 3, '', FONT_IMP_20, black)
+impact_x = InputBox(1060, 300, 42, 25, '0', 'int', 4, '', FONT_IMP_20, black)
+impact_z = InputBox(1130, 300, 42, 25, '0', 'int', 4, '', FONT_IMP_20, black)
 
 input_boxes = [input_box1, input_box2, input_box3, input_box4]
 align_input_boxes = [align_z, impact_x, impact_z]
